@@ -10,6 +10,8 @@ from spacy.errors import Errors
 from libcpp.memory cimport make_shared
 
 from .span cimport Span
+from libc.stdint cimport uint64_t, uint32_t, int32_t
+from libcpp.memory cimport make_shared
 
 
 cdef class SpanGroup:
