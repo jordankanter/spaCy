@@ -1,3 +1,4 @@
+from libcpp.memory cimport shared_ptr
 cimport numpy as np
 from libcpp.memory cimport shared_ptr
 
