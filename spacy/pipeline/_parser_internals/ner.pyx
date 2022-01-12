@@ -4,6 +4,10 @@ from libc.stdint cimport int32_t
 from libcpp.memory cimport shared_ptr
 from libcpp.vector cimport vector
 from cymem.cymem cimport Pool
+from libc.stdint cimport int32_t
+from libcpp.memory cimport shared_ptr
+from libcpp.vector cimport vector
+from cymem.cymem cimport Pool
 from libcpp.memory cimport shared_ptr
 from libcpp.vector cimport vector
 
@@ -54,7 +58,6 @@ MOVE_NAMES[OUT] = 'O'
 cdef struct GoldNERStateC:
     Transition* ner
     vector[shared_ptr[SpanC]] negs
-    vector[shared_ptr[SpanC]] negs
 
 
 cdef class BiluoGold:
@@ -100,8 +103,6 @@ cdef GoldNERStateC create_gold_state(
     # In order to handle negative samples, we need to maintain the full
     # (start, end, label) triple. If we break it down to the 'isnt B-LOC'
     # thing, we'll get blocked if there's an incorrect prefix.
-    for neg in negs:
-        gs.negs.push_back(neg.c)
     for neg in negs:
         gs.negs.push_back(neg.c)
     return gs
@@ -420,8 +421,6 @@ cdef class Begin:
 
         cdef shared_ptr[SpanC] span
 
-        cdef shared_ptr[SpanC] span
-
         if g_act == MISSING:
             pass
         elif g_act == BEGIN:
@@ -439,8 +438,6 @@ cdef class Begin:
             # be correct or not. However, we can at least tell whether we're
             # going to be opening an entity where there's only one possible
             # L.
-            for span in gold.negs:
-                if span.get().label == label and span.get().start == b0:
             for span in gold.negs:
                 if span.get().label == label and span.get().start == b0:
                     cost += 1
@@ -586,9 +583,6 @@ cdef class Last:
         cdef shared_ptr[SpanC] span
         for span in gold.negs:
             if span.get().label == label and (span.get().end-1) == b0 and span.get().start == ent_start:
-        cdef shared_ptr[SpanC] span
-        for span in gold.negs:
-            if span.get().label == label and (span.get().end-1) == b0 and span.get().start == ent_start:
                 cost += 1
                 break
         return cost
@@ -652,9 +646,6 @@ cdef class Unit:
         # This is fairly straight-forward for U- entities, as we have a single
         # action
         cdef int b0 = s.B(0)
-        cdef shared_ptr[SpanC] span
-        for span in gold.negs:
-            if span.get().label == label and span.get().start == b0 and span.get().end == (b0+1):
         cdef shared_ptr[SpanC] span
         for span in gold.negs:
             if span.get().label == label and span.get().start == b0 and span.get().end == (b0+1):

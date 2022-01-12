@@ -2,17 +2,20 @@
 cimport numpy as np
 from libc.math cimport sqrt
 from libcpp.memory cimport make_shared
+from libc.math cimport sqrt
+from libcpp.memory cimport make_shared
 
 import numpy
 from thinc.api import get_array_module
 
 from ..attrs cimport *
-from ..attrs cimport ORTH, attr_id_t
+from ..attrs cimport attr_id_t
 from ..lexeme cimport Lexeme
-from ..structs cimport TokenC
+from ..parts_of_speech cimport univ_pos_t
+from ..structs cimport LexemeC, TokenC
 from ..symbols cimport dep
-from ..typedefs cimport attr_t, hash_t
-from .doc cimport _get_lca_matrix, get_token_attr
+from ..typedefs cimport attr_t
+from .doc cimport _get_lca_matrix, get_token_attr, token_by_end, token_by_start
 from .token cimport Token
 
 from ..errors import Errors, Warnings
@@ -133,8 +136,9 @@ cdef class Span:
             else:
                 return True
 
-        self_tuple = self._cmp_tuple()
-        other_tuple = other._cmp_tuple()
+        cdef SpanC* span_c = self.span_c()
+        cdef SpanC* other_span_c = other.span_c()
+
         # <
         if op == 0:
             return span_c.start_char < other_span_c.start_char
@@ -169,20 +173,8 @@ cdef class Span:
             return span_c.start_char >= other_span_c.start_char
 
     def __hash__(self):
-        return hash(self._cmp_tuple())
-
-    def _cmp_tuple(self):
         cdef SpanC* span_c = self.span_c()
-        return (
-            span_c.start_char,
-            span_c.end_char,
-            span_c.start,
-            span_c.end,
-            span_c.label,
-            span_c.kb_id,
-            span_c.id,
-            self.doc,
-        )
+        return hash((self.doc, span_c.start_char, span_c.end_char, span_c.label, span_c.kb_id))
 
     def __len__(self):
         """Get the number of tokens in the span.
@@ -240,8 +232,9 @@ cdef class Span:
     def _(self):
         cdef SpanC* span_c = self.span_c()
         """Custom extension attributes registered via `set_extension`."""
+        cdef SpanC* span_c = self.span_c()
         return Underscore(Underscore.span_extensions, self,
-                          start=span_c.start_char, end=span_c.end_char, label=self.label, kb_id=self.kb_id, span_id=self.id)
+                          start=span_c.start_char, end=span_c.end_char)
 
     def as_doc(self, *, bint copy_user_data=False, array_head=None, array=None):
         """Create a `Doc` object with a copy of the `Span`'s data.
@@ -520,13 +513,13 @@ cdef class Span:
                     start = i
                     if start >= self.end:
                         break
-            if start < self.end:
-                spans.append(Span(self.doc, start, self.end))
-        return tuple(spans)
+                elif i == self.doc.length - 1:
+                    spans.append(Span(self.doc, start, self.doc.length))
 
             # Ensure that trailing parts of the Span instance are included in last element of .sents.
             if start == self.doc.length - 1:
-                yield Span(self.doc, start, self.doc.length)
+                spans.append(Span(self.doc, start, self.doc.length))
+        return tuple(spans)
 
     @property
     def ents(self):
@@ -836,27 +829,18 @@ cdef class Span:
             return self.span_c().label
 
         def __set__(self, attr_t label):
-            if label != self.span_c().label :
-                old_label = self.span_c().label
-                self.span_c().label = label
-                new = Underscore(Underscore.span_extensions, self, start=self.span_c().start_char, end=self.span_c().end_char, label=self.label, kb_id=self.kb_id, span_id=self.id)
-                old = Underscore(Underscore.span_extensions, self, start=self.span_c().start_char, end=self.span_c().end_char, label=old_label, kb_id=self.kb_id, span_id=self.id)
-                Underscore._replace_keys(old, new)
+            self.span_c().label = label
 
     property kb_id:
         def __get__(self):
             return self.span_c().kb_id
 
         def __set__(self, attr_t kb_id):
-            if kb_id != self.span_c().kb_id :
-                old_kb_id = self.span_c().kb_id
-                self.span_c().kb_id = kb_id
-                new = Underscore(Underscore.span_extensions, self, start=self.span_c().start_char, end=self.span_c().end_char, label=self.label, kb_id=self.kb_id, span_id=self.id)
-                old = Underscore(Underscore.span_extensions, self, start=self.span_c().start_char, end=self.span_c().end_char, label=self.label, kb_id=old_kb_id, span_id=self.id)
-                Underscore._replace_keys(old, new)
+            self.span_c().kb_id = kb_id
 
     property id:
         def __get__(self):
+            return self.span_c().id
             return self.span_c().id
 
         def __set__(self, attr_t id):
@@ -869,9 +853,13 @@ cdef class Span:
 
     property ent_id:
         """Alias for the span's ID."""
+        """Alias for the span's ID."""
         def __get__(self):
             return self.id
+            return self.id
 
+        def __set__(self, attr_t ent_id):
+            self.id = ent_id
         def __set__(self, attr_t ent_id):
             self.id = ent_id
 
@@ -890,6 +878,7 @@ cdef class Span:
 
     property label_:
         """The span's label."""
+        """The span's label."""
         def __get__(self):
             return self.doc.vocab.strings[self.label]
 
@@ -899,6 +888,7 @@ cdef class Span:
 
     property kb_id_:
         """The span's KB ID."""
+        """The span's KB ID."""
         def __get__(self):
             return self.doc.vocab.strings[self.kb_id]
 
@@ -907,6 +897,7 @@ cdef class Span:
         self.kb_id = self.doc.vocab.strings.add(kb_id_)
 
     property id_:
+        """The span's ID."""
         """The span's ID."""
         def __get__(self):
             return self.doc.vocab.strings[self.id]
@@ -922,7 +913,6 @@ cdef class Span:
 
         def __set__(self, str ent_id_):
             self.id_ = ent_id_
-
 
 
 cdef int _count_words_to_root(const TokenC* token, int sent_length) except -1:
