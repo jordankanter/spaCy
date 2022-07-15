@@ -302,8 +302,7 @@ class Morphologizer(Tagger):
         DOCS: https://spacy.io/api/morphologizer#get_loss
         """
         validate_examples(examples, "Morphologizer.get_loss")
-        loss_func = SequenceCategoricalCrossentropy(names=self.labels, normalize=False,
-                                                    label_smoothing=self.cfg["label_smoothing"])
+        loss_func = SequenceCategoricalCrossentropy(names=tuple(self.labels), normalize=False)
         truths = []
         for eg in examples:
             eg_truths = []
