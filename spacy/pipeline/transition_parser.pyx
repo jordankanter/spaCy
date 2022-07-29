@@ -186,6 +186,7 @@ cdef class Parser(TrainablePipe):
         self._rehearsal_model = None
         self.scorer = scorer
         self._cpu_ops = get_ops("cpu") if isinstance(self.model.ops, CupyOps) else self.model.ops
+        self._cpu_ops = get_ops("cpu") if isinstance(self.model.ops, CupyOps) else self.model.ops
 
     def __getnewargs_ex__(self):
         """This allows pickling the Parser and its keyword-only init arguments"""
