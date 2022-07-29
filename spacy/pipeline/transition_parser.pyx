@@ -159,6 +159,7 @@ class Parser(TrainablePipe):
         self._rehearsal_model = None
         self.scorer = scorer
         self._cpu_ops = get_ops("cpu") if isinstance(self.model.ops, CupyOps) else self.model.ops
+        self._cpu_ops = get_ops("cpu") if isinstance(self.model.ops, CupyOps) else self.model.ops
 
     def __getnewargs_ex__(self):
         """This allows pickling the Parser and its keyword-only init arguments"""
@@ -400,7 +401,9 @@ class Parser(TrainablePipe):
         return states_or_beams
 
     def greedy_parse(self, docs, drop=0.):
-        self._resize()
+        cdef vector[StateC*] states
+        cdef StateClass state
+        cdef CBlas cblas = self._cpu_ops.cblas()
         self._ensure_labels_are_added(docs)
         with _change_attrs(self.model, beam_width=1):
             inputs = TransitionModelInputs(docs=docs, moves=self.moves)
