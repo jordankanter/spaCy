@@ -898,20 +898,20 @@ cdef class Span:
     property id:
         def __get__(self):
             return self.span_c().id
+            return self.span_c().id
 
         def __set__(self, attr_t id):
-            if id != self.span_c().id :
-                old_id = self.span_c().id
-                self.span_c().id = id
-                new = Underscore(Underscore.span_extensions, self, start=self.span_c().start_char, end=self.span_c().end_char, label=self.label, kb_id=self.kb_id, span_id=self.id)
-                old = Underscore(Underscore.span_extensions, self, start=self.span_c().start_char, end=self.span_c().end_char, label=self.label, kb_id=self.kb_id, span_id=old_id)
-                Underscore._replace_keys(old, new)
+            self.span_c().id = id
 
     property ent_id:
         """Alias for the span's ID."""
+        """Alias for the span's ID."""
         def __get__(self):
             return self.id
+            return self.id
 
+        def __set__(self, attr_t ent_id):
+            self.id = ent_id
         def __set__(self, attr_t ent_id):
             self.id = ent_id
 
@@ -930,6 +930,7 @@ cdef class Span:
 
     property label_:
         """The span's label."""
+        """The span's label."""
         def __get__(self):
             return self.doc.vocab.strings[self.label]
 
@@ -939,6 +940,7 @@ cdef class Span:
 
     property kb_id_:
         """The span's KB ID."""
+        """The span's KB ID."""
         def __get__(self):
             return self.doc.vocab.strings[self.kb_id]
 
@@ -947,6 +949,7 @@ cdef class Span:
         self.kb_id = self.doc.vocab.strings.add(kb_id_)
 
     property id_:
+        """The span's ID."""
         """The span's ID."""
         def __get__(self):
             return self.doc.vocab.strings[self.id]
@@ -962,6 +965,7 @@ cdef class Span:
 
         def __set__(self, str ent_id_):
             self.id_ = ent_id_
+
 
 
 cdef int _count_words_to_root(const TokenC* token, int sent_length) except -1:
