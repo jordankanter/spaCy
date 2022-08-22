@@ -834,31 +834,20 @@ cdef class Span:
         def __set__(self, attr_t kb_id):
             self.span_c().kb_id = kb_id
 
-    @property
-    def id(self):
-        return self.c.id
+    property id:
+        def __get__(self):
+            return self.span_c().id
 
-    @id.setter
-    def id(self, attr_t id):
-        self.c.id = id
+        def __set__(self, attr_t id):
+            self.span_c().id = id
 
-    @property
-    def ent_id(self):
-        """RETURNS (uint64): The entity ID."""
-        return self.root.ent_id
+    property ent_id:
+        """Alias for the span's ID."""
+        def __get__(self):
+            return self.id
 
-    @ent_id.setter
-    def ent_id(self, hash_t key):
-        raise NotImplementedError(Errors.E200.format(attr="ent_id"))
-
-    @property
-    def ent_id_(self):
-        """RETURNS (str): The (string) entity ID."""
-        return self.root.ent_id_
-
-    @ent_id_.setter
-    def ent_id_(self, str key):
-        raise NotImplementedError(Errors.E200.format(attr="ent_id_"))
+        def __set__(self, attr_t ent_id):
+            self.id = ent_id
 
     @property
     def orth_(self):
@@ -873,32 +862,41 @@ cdef class Span:
         """RETURNS (str): The span's lemma."""
         return "".join([t.lemma_ + t.whitespace_ for t in self]).strip()
 
-    @property
-    def label_(self):
-        """RETURNS (str): The span's label."""
-        return self.doc.vocab.strings[self.label]
+    property label_:
+        """The span's label."""
+        def __get__(self):
+            return self.doc.vocab.strings[self.label]
 
     @label_.setter
     def label_(self, str label_):
         self.label = self.doc.vocab.strings.add(label_)
 
-    @property
-    def kb_id_(self):
-        """RETURNS (str): The span's KB ID."""
-        return self.doc.vocab.strings[self.kb_id]
+    property kb_id_:
+        """The span's KB ID."""
+        def __get__(self):
+            return self.doc.vocab.strings[self.kb_id]
 
     @kb_id_.setter
     def kb_id_(self, str kb_id_):
         self.kb_id = self.doc.vocab.strings.add(kb_id_)
 
-    @property
-    def id_(self):
-        """RETURNS (str): The span's ID."""
-        return self.doc.vocab.strings[self.id]
+    property id_:
+        """The span's ID."""
+        def __get__(self):
+            return self.doc.vocab.strings[self.id]
 
     @id_.setter
     def id_(self, str id_):
         self.id = self.doc.vocab.strings.add(id_)
+
+    property ent_id_:
+        """Alias for the span's ID."""
+        def __get__(self):
+            return self.id_
+
+        def __set__(self, str ent_id_):
+            self.id_ = ent_id_
+
 
 
 cdef int _count_words_to_root(const TokenC* token, int sent_length) except -1:
