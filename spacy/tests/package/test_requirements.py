@@ -25,7 +25,7 @@ def test_build_dependencies():
     libs_ignore_setup = [
         "numpy",
         "fugashi",
-        "natto-py",
+        "mecab-ko",
         "pythainlp",
         "sudachipy",
         "sudachidict_core",
