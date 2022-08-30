@@ -8,7 +8,6 @@ from typing import (
     List,
     Optional,
     Protocol,
-    Sequence,
     Tuple,
     Union,
     overload,
@@ -16,20 +15,18 @@ from typing import (
 
 import numpy as np
 from cymem.cymem import Pool
-from thinc.types import ArrayXd, Floats1d, Floats2d, Ints2d, Ragged
+from thinc.types import Floats1d, Floats2d, Ints2d
 from .span import Span
 from .token import Token
 from .span_groups import SpanGroups
 from .retokenizer import Retokenizer
 from ..lexeme import Lexeme
 from ..vocab import Vocab
-from ._dict_proxies import SpanGroups
-from ._retokenize import Retokenizer
+from .retokenizer import Retokenizer
 from .span import Span
+from .span_groups import SpanGroups
 from .token import Token
 from .underscore import Underscore
-
-DOCBIN_ALL_ATTRS: Tuple[str, ...]
 
 class DocMethod(Protocol):
     def __call__(self: Doc, *args: Any, **kwargs: Any) -> Any: ...  # type: ignore[misc]
@@ -40,7 +37,6 @@ class Doc:
     spans: SpanGroups
     max_length: int
     length: int
-    sentiment: float
     activations: Dict[str, Dict[str, Union[ArrayXd, Ragged]]]
     cats: Dict[str, float]
     user_hooks: Dict[str, Callable[..., Any]]
@@ -125,6 +121,7 @@ class Doc:
         start_idx: int,
         end_idx: int,
         label: Union[int, str] = ...,
+        *,
         kb_id: Union[int, str] = ...,
         vector: Optional[Floats1d] = ...,
         alignment_mode: str = ...,
@@ -152,7 +149,7 @@ class Doc:
         blocked: Optional[List[Span]] = ...,
         missing: Optional[List[Span]] = ...,
         outside: Optional[List[Span]] = ...,
-        default: str = ...
+        default: str = ...,
     ) -> None: ...
     @property
     def noun_chunks(self) -> Tuple[Span]: ...
