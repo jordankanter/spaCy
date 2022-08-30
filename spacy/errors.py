@@ -500,7 +500,7 @@ class Errors(metaclass=ErrorsWithCodes):
             "Current DocBin: {current}\nOther DocBin: {other}")
     E169 = ("Can't find module: {module}")
     E170 = ("Cannot apply transition {name}: invalid for the current state.")
-    E171 = ("Matcher.add received invalid 'on_match' callback argument: expected "
+    E171 = ("{name}.add received invalid 'on_match' callback argument: expected "
             "callable or None, but got: {arg_type}")
     E175 = ("Can't remove rule for unknown match pattern ID: {key}")
     E176 = ("Alias '{alias}' is not defined in the Knowledge Base.")
@@ -759,7 +759,7 @@ class Errors(metaclass=ErrorsWithCodes):
             "loaded nlp object, but got: {source}")
     E947 = ("`Matcher.add` received invalid `greedy` argument: expected "
             "a string value from {expected} but got: '{arg}'")
-    E948 = ("`Matcher.add` received invalid 'patterns' argument: expected "
+    E948 = ("`{name}.add` received invalid 'patterns' argument: expected "
             "a list, but got: {arg_type}")
     E949 = ("Unable to align tokens for the predicted and reference docs. It "
             "is only possible to align the docs when both texts are the same "
@@ -988,6 +988,9 @@ class Errors(metaclass=ErrorsWithCodes):
     E1057 = ("The `TextCatReduce` architecture must be used with at least one "
              "reduction. Please enable one of `use_reduce_first`, "
              "`use_reduce_last`, `use_reduce_max` or `use_reduce_mean`.")
+
+    # v4 error strings
+    E4000 = ("Expected a Doc as input, but got: '{type}'")
 
 
 # Deprecated model shortcuts, only used in errors and warnings
