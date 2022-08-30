@@ -1,9 +1,8 @@
 # cython: infer_types=True, profile=True
-from collections import defaultdict
 from typing import List
-
+from collections import defaultdict
 from libc.stdint cimport uintptr_t
-from preshed.maps cimport map_clear, map_get, map_init, map_iter, map_set
+from preshed.maps cimport map_init, map_set, map_get, map_clear, map_iter
 
 import warnings
 
@@ -44,7 +43,6 @@ cdef class PhraseMatcher:
         """
         self.vocab = vocab
         self._callbacks = {}
-        self._docs = defaultdict(set)
         self._docs = defaultdict(set)
         self._validate = validate
 
@@ -161,14 +159,13 @@ cdef class PhraseMatcher:
         del self._callbacks[key]
         del self._docs[key]
 
+
     def _add_from_arrays(self, key, specs, *, on_match=None):
         """Add a preprocessed list of specs, with an optional callback.
 
         key (str): The match ID.
         specs (List[List[int]]): A list of lists of hashes to match.
-        specs (List[List[int]]): A list of lists of hashes to match.
         on_match (callable): Callback executed on match.
-        """
         """
         cdef MapStruct* current_node
         cdef MapStruct* internal_node
@@ -177,12 +174,8 @@ cdef class PhraseMatcher:
         self._callbacks[key] = on_match
         for spec in specs:
             self._docs[key].add(tuple(spec))
-        self._callbacks[key] = on_match
-        for spec in specs:
-            self._docs[key].add(tuple(spec))
 
             current_node = self.c_map
-            for token in spec:
             for token in spec:
                 if token == self._terminal_hash:
                     warnings.warn(Warnings.W021)
@@ -201,6 +194,7 @@ cdef class PhraseMatcher:
                 map_set(self.mem, current_node, self._terminal_hash, internal_node)
                 result = internal_node
             map_set(self.mem, <MapStruct*>result, self.vocab.strings[key], NULL)
+
 
     def add(self, key, docs, *, on_match=None):
         """Add a match-rule to the phrase-matcher. A match-rule consists of: an ID
@@ -364,7 +358,6 @@ def unpickle_matcher(vocab, docs, callbacks, attr):
     matcher = PhraseMatcher(vocab, attr=attr)
     for key, specs in docs.items():
         callback = callbacks.get(key, None)
-        matcher._add_from_arrays(key, specs, on_match=callback)
         matcher._add_from_arrays(key, specs, on_match=callback)
     return matcher
 
