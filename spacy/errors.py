@@ -499,7 +499,6 @@ class Errors(metaclass=ErrorsWithCodes):
     E169 = ("Can't find module: {module}")
     E170 = ("Cannot apply transition {name}: invalid for the current state.")
     E171 = ("{name}.add received invalid 'on_match' callback argument: expected "
-    E171 = ("{name}.add received invalid 'on_match' callback argument: expected "
             "callable or None, but got: {arg_type}")
     E175 = ("Can't remove rule for unknown match pattern ID: {key}")
     E176 = ("Alias '{alias}' is not defined in the Knowledge Base.")
@@ -752,7 +751,6 @@ class Errors(metaclass=ErrorsWithCodes):
     E947 = ("`Matcher.add` received invalid `greedy` argument: expected "
             "a string value from {expected} but got: '{arg}'")
     E948 = ("`{name}.add` received invalid 'patterns' argument: expected "
-    E948 = ("`{name}.add` received invalid 'patterns' argument: expected "
             "a list, but got: {arg_type}")
     E949 = ("Unable to align tokens for the predicted and reference docs. It "
             "is only possible to align the docs when both texts are the same "
@@ -982,33 +980,16 @@ class Errors(metaclass=ErrorsWithCodes):
 
     # v4 error strings
     E4000 = ("Expected a Doc as input, but got: '{type}'")
-    E4001 = ("Expected input to be one of the following types: ({expected_types}), "
-             "but got '{received_type}'")
-    E4002 = ("Pipe '{name}' requires a teacher pipe for distillation.")
-    E4003 = ("Training examples for distillation must have the exact same tokens in the "
-             "reference and predicted docs.")
-    E4004 = ("Backprop is not supported when is_train is not set.")
-    E4005 = ("EntityLinker_v1 is not supported in spaCy v4. Update your configuration.")
-    E4006 = ("Expected `entity_id` to be of type {exp_type}, but is of type {found_type}.")
-    E4007 = ("Span {var} {value} must be {op} Span {existing_var} "
-             "{existing_value}.")
-    E4008 = ("Span {pos}_char {value} does not correspond to a token {pos}.")
-    E4009 = ("The '{attr}' parameter should be 'None' or 'True', but found '{value}'.")
-    E4010 = ("Required lemmatizer table(s) {missing_tables} not found in "
-             "[initialize] or in registered lookups (spacy-lookups-data). An "
-             "example for how to load lemmatizer tables in [initialize]:\n\n"
-             "[initialize.components]\n\n"
-             "[initialize.components.{pipe_name}]\n\n"
-             "[initialize.components.{pipe_name}.lookups]\n"
-             '@misc = "spacy.LookupsDataLoaderFromURL.v1"\n'
-             "lang = ${{nlp.lang}}\n"
-             f'url = "{about.__lookups_url__}"\n'
-             "tables = {tables}\n"
-             "# or required tables only: tables = {required_tables}\n")
-    E4011 = ("Server error ({status_code}), couldn't fetch {url}")
 
 
-RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
+# Deprecated model shortcuts, only used in errors and warnings
+OLD_MODEL_SHORTCUTS = {
+    "en": "en_core_web_sm", "de": "de_core_news_sm", "es": "es_core_news_sm",
+    "pt": "pt_core_news_sm", "fr": "fr_core_news_sm", "it": "it_core_news_sm",
+    "nl": "nl_core_news_sm", "el": "el_core_news_sm", "nb": "nb_core_news_sm",
+    "lt": "lt_core_news_sm", "xx": "xx_ent_wiki_sm"
+}
+
 
 # fmt: on
 
