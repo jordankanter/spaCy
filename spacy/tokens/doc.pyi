@@ -15,8 +15,11 @@ from typing import (
 
 import numpy as np
 from cymem.cymem import Pool
-from thinc.types import ArrayXd, Floats1d, Floats2d, Ints2d, Ragged
-
+from thinc.types import Floats1d, Floats2d, Ints2d
+from .span import Span
+from .token import Token
+from .span_groups import SpanGroups
+from .retokenizer import Retokenizer
 from ..lexeme import Lexeme
 from ..vocab import Vocab
 from .retokenizer import Retokenizer
