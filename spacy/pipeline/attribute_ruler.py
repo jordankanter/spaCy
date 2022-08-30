@@ -10,8 +10,8 @@ from ..matcher import Matcher
 from ..scorer import Scorer
 from ..symbols import IDS
 from ..tokens import Doc, Span
-from ..tokens._retokenize import normalize_token_attrs, set_token_attrs
-from ..training import Example
+from ..tokens.retokenizer import normalize_token_attrs, set_token_attrs
+from ..vocab import Vocab
 from ..util import SimpleFrozenList, registry
 from ..vocab import Vocab
 from .pipe import Pipe

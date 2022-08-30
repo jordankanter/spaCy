@@ -21,7 +21,9 @@ from thinc.types import Floats2d, Ints1d, Ints2d, Ragged
 
 from ...attrs import intify_attr
 from ...errors import Errors
-from ...ml import _character_embed
+from ...ml import character_embed
+from ..staticvectors import StaticVectors
+from ..featureextractor import FeatureExtractor
 from ...pipeline.tok2vec import Tok2VecListener
 from ...tokens import Doc
 from ...util import registry
@@ -241,7 +243,7 @@ def CharacterEmbed(
     if feature is None:
         raise ValueError(Errors.E911.format(feat=feature))
     char_embed = chain(
-        _character_embed.CharacterEmbed(nM=nM, nC=nC),
+        character_embed.CharacterEmbed(nM=nM, nC=nC),
         cast(Model[List[Floats2d], Ragged], list2ragged()),
     )
     feature_extractor: Model[List[Doc], Ragged] = chain(
