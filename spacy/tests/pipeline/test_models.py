@@ -8,7 +8,7 @@ from thinc.types import Array2d, Ragged
 
 from spacy.lang.en import English
 from spacy.ml import FeatureExtractor, StaticVectors
-from spacy.ml._character_embed import CharacterEmbed
+from spacy.ml.character_embed import CharacterEmbed
 from spacy.tokens import Doc
 from spacy.vocab import Vocab
 
