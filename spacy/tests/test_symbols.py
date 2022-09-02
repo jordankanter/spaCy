@@ -1,5 +1,4 @@
 import pytest
-
 from spacy.symbols import IDS, NAMES
 
 V3_SYMBOLS = {
