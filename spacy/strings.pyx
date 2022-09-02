@@ -32,16 +32,34 @@ cdef class StringStore:
             for string in strings:
                 self.add(string)
 
-    def __getitem__(self, string_or_hash: Union[str, int]) -> Union[str, int]:
-        """Retrieve a string from a given hash. If a string
-        is passed as the input, add it to the store and return
-        its hash.
+    def __getitem__(self, object string_or_id):
+        """Retrieve a string from a given hash, or vice versa.
 
-        string_or_hash (int / str): The hash value to lookup or the string to store.
-        RETURNS (str / int): The stored string or the hash of the newly added string.
+        string_or_id (bytes, str or uint64): The value to encode.
+        Returns (str / uint64): The value to be retrieved.
         """
-        if isinstance(string_or_hash, str):
-            return self.add(string_or_hash)
+        cdef hash_t str_hash
+        cdef Utf8Str* utf8str = NULL
+
+        if isinstance(string_or_id, str):
+            if len(string_or_id) == 0:
+                return 0
+
+            # Return early if the string is found in the symbols LUT.
+            symbol = SYMBOLS_BY_STR.get(string_or_id, None)
+            if symbol is not None:
+                return symbol
+            else:
+                return hash_string(string_or_id)
+        elif isinstance(string_or_id, bytes):
+            return hash_utf8(string_or_id, len(string_or_id))
+        elif _try_coerce_to_hash(string_or_id, &str_hash):
+            if str_hash == 0:
+                return ""
+            elif str_hash in SYMBOLS_BY_INT:
+                return SYMBOLS_BY_INT[str_hash]
+            else:
+                utf8str = <Utf8Str*>self._map.get(str_hash)
         else:
             return self._get_interned_str(string_or_hash)
 
@@ -111,24 +129,13 @@ cdef class StringStore:
         if isinstance(string_or_hash, str):
             return string_or_hash
         else:
-            return self._get_interned_str(string_or_hash)
+            # TODO: Raise an error instead
+            return self._map.get(string_or_id) is not NULL
 
-    def items(self) -> List[Tuple[str, int]]:
-        """Iterate over the stored strings and their hashes in insertion order.
-
-        RETURNS: A list of string-hash pairs.
-        """
-        # Even though we internally store the hashes as keys and the strings as
-        # values, we invert the order in the public API to keep it consistent with
-        # the implementation of the `__iter__` method (where we wish to iterate over
-        # the strings in the store).
-        cdef int i
-        pairs = [None] * self._keys.size()
-        for i in range(self._keys.size()):
-            str_hash = self._keys[i]
-            utf8str = <Utf8Str*>self._map.get(str_hash)
-            pairs[i] = (self._decode_str_repr(utf8str), str_hash)
-        return pairs
+        if str_hash in SYMBOLS_BY_INT:
+            return True
+        else:
+            return self._map.get(str_hash) is not NULL
 
     def keys(self) -> List[str]:
         """Iterate over the stored strings in insertion order.
