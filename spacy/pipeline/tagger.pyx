@@ -1,36 +1,31 @@
 # cython: infer_types=True, profile=True, binding=True
 from typing import Callable, Dict, Iterable, List, Optional, Union
-from typing import Tuple
 import numpy
 import srsly
-from thinc.api import Model, set_dropout_rate, Config
-from thinc.legacy import LegacySequenceCategoricalCrossentropy
+from thinc.api import Model, set_dropout_rate, SequenceCategoricalCrossentropy, Config
 from thinc.types import Floats2d, Ints1d
 import warnings
 from itertools import islice
-from typing import Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Callable, Optional
 
 import numpy
 from thinc.api import Config, Model, SequenceCategoricalCrossentropy, set_dropout_rate
-from thinc.types import Floats2d, Ints1d
 
-from ..morphology cimport Morphology
 from ..tokens.doc cimport Doc
-from ..vocab cimport Vocab
 
 from .. import util
-from ..attrs import ID, POS
-from ..errors import Errors, Warnings
+from ..errors import Errors
 from ..language import Language
-from ..parts_of_speech import X
 from ..scorer import Scorer
 from ..training import validate_examples, validate_get_examples
 from ..util import registry
-from .pipe import deserialize_config
 from .trainable_pipe import TrainablePipe
 
 
 ActivationsT = Dict[str, Union[List[Floats2d], List[Ints1d]]]
+
+# See #9050
+BACKWARD_OVERWRITE = False
 
 default_model_config = """
 [model]
@@ -59,13 +54,6 @@ DEFAULT_TAGGER_MODEL = Config().from_str(default_model_config)["model"]
         "neg_prefix": "!",
         "save_activations": False,
     },
-    default_config={
-        "model": DEFAULT_TAGGER_MODEL,
-        "overwrite": False,
-        "scorer": {"@scorers": "spacy.tagger_scorer.v1"},
-        "neg_prefix": "!",
-        "save_activations": False,
-    },
     default_score_weights={"tag_acc": 1.0},
 )
 def make_tagger(
@@ -76,7 +64,6 @@ def make_tagger(
     scorer: Optional[Callable],
     neg_prefix: str,
     save_activations: bool,
-    save_activations: bool,
 ):
     """Construct a part-of-speech tagger component.
 
@@ -85,8 +72,6 @@ def make_tagger(
         in size, and be normalized as probabilities (all scores between 0 and 1,
         with the rows summing to 1).
     """
-    return Tagger(nlp.vocab, model, name, overwrite=overwrite, scorer=scorer, neg_prefix=neg_prefix,
-                  save_activations=save_activations)
     return Tagger(nlp.vocab, model, name, overwrite=overwrite, scorer=scorer, neg_prefix=neg_prefix,
                   save_activations=save_activations)
 
@@ -111,10 +96,9 @@ class Tagger(TrainablePipe):
         model,
         name="tagger",
         *,
-        overwrite=False,
+        overwrite=BACKWARD_OVERWRITE,
         scorer=tagger_score,
         neg_prefix="!",
-        save_activations: bool = False,
         save_activations: bool = False,
     ):
         """Initialize a part-of-speech tagger.
@@ -123,10 +107,8 @@ class Tagger(TrainablePipe):
         model (thinc.api.Model): The Thinc Model powering the pipeline component.
         name (str): The component instance name, used to add entries to the
             losses during training.
-        overwrite (bool): Whether to overwrite existing annotations.
         scorer (Optional[Callable]): The scoring method. Defaults to
             Scorer.score_token_attr for the attribute "tag".
-        save_activations (bool): save model activations in Doc when annotating.
         save_activations (bool): save model activations in Doc when annotating.
 
         DOCS: https://spacy.io/api/tagger#init
@@ -138,7 +120,6 @@ class Tagger(TrainablePipe):
         cfg = {"labels": [], "overwrite": overwrite, "neg_prefix": neg_prefix, "label_smoothing": label_smoothing}
         self.cfg = dict(sorted(cfg.items()))
         self.scorer = scorer
-        self.save_activations = save_activations
         self.save_activations = save_activations
 
     @property
@@ -159,7 +140,6 @@ class Tagger(TrainablePipe):
         return tuple(self.cfg["labels"])
 
     def predict(self, docs) -> ActivationsT:
-    def predict(self, docs) -> ActivationsT:
         """Apply the pipeline's model to a batch of docs, without modifying them.
 
         docs (Iterable[Doc]): The documents to predict.
@@ -173,12 +153,10 @@ class Tagger(TrainablePipe):
             guesses = [self.model.ops.alloc((0, n_labels)) for doc in docs]
             assert len(guesses) == len(docs)
             return {"probabilities": guesses, "label_ids": guesses}
-            return {"probabilities": guesses, "label_ids": guesses}
         scores = self.model.predict(docs)
         assert len(scores) == len(docs), (len(scores), len(docs))
         guesses = self._scores2guesses(scores)
         assert len(guesses) == len(docs)
-        return {"probabilities": scores, "label_ids": guesses}
         return {"probabilities": scores, "label_ids": guesses}
 
     def _scores2guesses(self, scores):
@@ -191,16 +169,13 @@ class Tagger(TrainablePipe):
         return guesses
 
     def set_annotations(self, docs: Iterable[Doc], activations: ActivationsT):
-    def set_annotations(self, docs: Iterable[Doc], activations: ActivationsT):
         """Modify a batch of documents, using pre-computed scores.
 
         docs (Iterable[Doc]): The documents to modify.
         activations (ActivationsT): The activations used for setting annotations, produced by Tagger.predict.
-        activations (ActivationsT): The activations used for setting annotations, produced by Tagger.predict.
 
         DOCS: https://spacy.io/api/tagger#set_annotations
         """
-        batch_tag_ids = activations["label_ids"]
         batch_tag_ids = activations["label_ids"]
         if isinstance(docs, Doc):
             docs = [docs]
@@ -208,10 +183,6 @@ class Tagger(TrainablePipe):
         cdef bint overwrite = self.cfg["overwrite"]
         labels = self.labels
         for i, doc in enumerate(docs):
-            if self.save_activations:
-                doc.activations[self.name] = {}
-                for act_name, acts in activations.items():
-                    doc.activations[self.name][act_name] = acts[i]
             if self.save_activations:
                 doc.activations[self.name] = {}
                 for act_name, acts in activations.items():
@@ -271,6 +242,7 @@ class Tagger(TrainablePipe):
 
         DOCS: https://spacy.io/api/tagger#rehearse
         """
+        loss_func = SequenceCategoricalCrossentropy()
         if losses is None:
             losses = {}
         losses.setdefault(self.name, 0.0)
@@ -284,31 +256,11 @@ class Tagger(TrainablePipe):
         set_dropout_rate(self.model, drop)
         tag_scores, bp_tag_scores = self.model.begin_update(docs)
         tutor_tag_scores, _ = self._rehearsal_model.begin_update(docs)
-        loss, grads = self.get_teacher_student_loss(tutor_tag_scores, tag_scores)
+        grads, loss = loss_func(tag_scores, tutor_tag_scores)
         bp_tag_scores(grads)
-        if sgd is not None:
-            self.finish_update(sgd)
+        self.finish_update(sgd)
         losses[self.name] += loss
         return losses
-
-    def get_teacher_student_loss(
-        self, teacher_scores: List[Floats2d], student_scores: List[Floats2d]
-    ) -> Tuple[float, List[Floats2d]]:
-        """Calculate the loss and its gradient for a batch of student
-        scores, relative to teacher scores.
-
-        teacher_scores: Scores representing the teacher model's predictions.
-        student_scores: Scores representing the student model's predictions.
-
-        RETURNS (Tuple[float, float]): The loss and the gradient.
-
-        DOCS: https://spacy.io/api/tagger#get_teacher_student_loss
-        """
-        loss_func = SequenceCategoricalCrossentropy(normalize=False)
-        d_scores, loss = loss_func(student_scores, teacher_scores)
-        if self.model.ops.xp.isnan(loss):
-            raise ValueError(Errors.E910.format(name=self.name))
-        return float(loss), d_scores
 
     def get_loss(self, examples, scores):
         """Find the loss and gradient of loss for the batch of documents and
@@ -321,12 +273,7 @@ class Tagger(TrainablePipe):
         DOCS: https://spacy.io/api/tagger#get_loss
         """
         validate_examples(examples, "Tagger.get_loss")
-        loss_func = SequenceCategoricalCrossentropy(
-            names=self.labels,
-            normalize=False,
-            neg_prefix=self.cfg["neg_prefix"],
-            label_smoothing=self.cfg["label_smoothing"]
-        )
+        loss_func = SequenceCategoricalCrossentropy(names=self.labels, normalize=False, neg_prefix=self.cfg["neg_prefix"], label_smoothing=self.cfg["label_smoothing"])
         # Convert empty tag "" to missing value None so that both misaligned
         # tokens and tokens with missing annotation have the default missing
         # value None.
