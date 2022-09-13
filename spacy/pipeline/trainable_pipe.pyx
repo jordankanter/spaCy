@@ -2,10 +2,14 @@
 from typing import Callable, Dict, Iterable, Iterator, Optional, Tuple
 
 import srsly
-from thinc.api import Model, Optimizer, set_dropout_rate
+from thinc.api import set_dropout_rate, Model, Optimizer
+import warnings
 
 from ..tokens.doc cimport Doc
 
+from ..training import validate_examples
+from ..errors import Errors, Warnings
+from .pipe import Pipe, deserialize_config
 from .. import util
 from ..errors import Errors
 from ..language import Language
