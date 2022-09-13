@@ -1,3 +1,7 @@
+from typing import Iterable, Optional, Dict, List, Callable, Any, Union
+from thinc.types import Floats2d
+from thinc.api import Model, Config
+
 from itertools import islice
 from typing import Any, Callable, Dict, Iterable, List, Optional
 
@@ -78,7 +82,8 @@ subword_features = true
     default_config={
         "threshold": 0.5,
         "model": DEFAULT_MULTI_TEXTCAT_MODEL,
-        "scorer": {"@scorers": "spacy.textcat_multilabel_scorer.v2"},
+        "scorer": {"@scorers": "spacy.textcat_multilabel_scorer.v1"},
+        "save_activations": False,
     },
     default_score_weights={
         "cats_score": 1.0,
@@ -99,8 +104,9 @@ def make_multilabel_textcat(
     model: Model[List[Doc], List[Floats2d]],
     threshold: float,
     scorer: Optional[Callable],
-) -> "MultiLabel_TextCategorizer":
-    """Create a MultiLabel_TextCategorizer component. The text categorizer predicts categories
+    save_activations: bool,
+) -> "TextCategorizer":
+    """Create a TextCategorizer component. The text categorizer predicts categories
     over a whole document. It can learn one or more labels, and the labels are considered
     to be non-mutually exclusive, which means that there can be zero or more labels
     per doc).
@@ -111,7 +117,12 @@ def make_multilabel_textcat(
     scorer (Optional[Callable]): The scoring method.
     """
     return MultiLabel_TextCategorizer(
-        nlp.vocab, model, name, threshold=threshold, scorer=scorer
+        nlp.vocab,
+        model,
+        name,
+        threshold=threshold,
+        scorer=scorer,
+        save_activations=save_activations,
     )
 
 
@@ -143,6 +154,7 @@ class MultiLabel_TextCategorizer(TextCategorizer):
         *,
         threshold: float,
         scorer: Optional[Callable] = textcat_multilabel_score,
+        save_activations: bool = False,
     ) -> None:
         """Initialize a text categorizer for multi-label classification.
 
@@ -151,7 +163,7 @@ class MultiLabel_TextCategorizer(TextCategorizer):
         name (str): The component instance name, used to add entries to the
             losses during training.
         threshold (float): Cutoff to consider a prediction "positive".
-        scorer (Optional[Callable]): The scoring method.
+        save_activations (bool): save model activations in Doc when annotating.
 
         DOCS: https://spacy.io/api/textcategorizer#init
         """
@@ -162,6 +174,7 @@ class MultiLabel_TextCategorizer(TextCategorizer):
         cfg = {"labels": [], "threshold": threshold}
         self.cfg = dict(cfg)
         self.scorer = scorer
+        self.save_activations = save_activations
 
     @property
     def support_missing_values(self):
