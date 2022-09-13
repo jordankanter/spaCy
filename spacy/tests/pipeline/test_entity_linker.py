@@ -1,18 +1,17 @@
-from typing import Any, Callable, Dict, Iterable, cast
+from typing import Callable, Iterable, Dict, Any, cast
 
 import pytest
 from numpy.testing import assert_equal
-from thinc.types import Ragged
 from thinc.types import Ragged
 
 from spacy import Language, registry, util
 from spacy.attrs import ENT_KB_ID
 from spacy.compat import pickle
-from spacy.kb import Candidate, InMemoryLookupKB, KnowledgeBase
+from spacy.kb import Candidate, InMemoryLookupKB, KnowledgeBase, get_candidates
 from spacy.lang.en import English
 from spacy.ml import load_kb
-from spacy.ml.models.entity_linker import build_span_maker, get_candidates
 from spacy.pipeline import EntityLinker, TrainablePipe
+from spacy.pipeline.legacy import EntityLinker_v1
 from spacy.pipeline.tok2vec import DEFAULT_TOK2VEC_MODEL
 from spacy.scorer import Scorer
 from spacy.tests.util import make_tempdir
@@ -454,17 +453,16 @@ def test_candidate_generation(nlp):
     mykb.add_alias(alias="adam", entities=["Q2"], probabilities=[0.9])
 
     # test the size of the relevant candidates
-    adam_ent_cands = get_candidates(mykb, adam_ent)
     assert len(get_candidates(mykb, douglas_ent)) == 2
-    assert len(adam_ent_cands) == 1
+    assert len(get_candidates(mykb, adam_ent)) == 1
     assert len(get_candidates(mykb, Adam_ent)) == 0  # default case sensitive
     assert len(get_candidates(mykb, shrubbery_ent)) == 0
 
     # test the content of the candidates
-    assert adam_ent_cands[0].entity_id_ == "Q2"
-    assert adam_ent_cands[0].alias == "adam"
-    assert_almost_equal(adam_ent_cands[0].entity_freq, 12)
-    assert_almost_equal(adam_ent_cands[0].prior_prob, 0.9)
+    assert get_candidates(mykb, adam_ent)[0].entity_ == "Q2"
+    assert get_candidates(mykb, adam_ent)[0].alias_ == "adam"
+    assert_almost_equal(get_candidates(mykb, adam_ent)[0].entity_freq, 12)
+    assert_almost_equal(get_candidates(mykb, adam_ent)[0].prior_prob, 0.9)
 
 
 def test_el_pipe_configuration(nlp):
@@ -492,7 +490,7 @@ def test_el_pipe_configuration(nlp):
     assert doc[2].ent_kb_id_ == "Q2"
 
     def get_lowercased_candidates(kb, span):
-        return kb._get_alias_candidates(span.text.lower())
+        return kb.get_alias_candidates(span.text.lower())
 
     def get_lowercased_candidates_batch(kb, spans):
         return [get_lowercased_candidates(kb, span) for span in spans]
@@ -551,22 +549,24 @@ def test_vocab_serialization(nlp):
     mykb.add_alias(alias="douglas", entities=["Q2", "Q3"], probabilities=[0.4, 0.1])
     adam_hash = mykb.add_alias(alias="adam", entities=["Q2"], probabilities=[0.9])
 
-    candidates = mykb._get_alias_candidates("adam")
+    candidates = mykb.get_alias_candidates("adam")
     assert len(candidates) == 1
-    assert candidates[0].entity_id == q2_hash
-    assert candidates[0].entity_id_ == "Q2"
-    assert candidates[0].alias == "adam"
+    assert candidates[0].entity == q2_hash
+    assert candidates[0].entity_ == "Q2"
+    assert candidates[0].alias == adam_hash
+    assert candidates[0].alias_ == "adam"
 
     with make_tempdir() as d:
         mykb.to_disk(d / "kb")
         kb_new_vocab = InMemoryLookupKB(Vocab(), entity_vector_length=1)
         kb_new_vocab.from_disk(d / "kb")
 
-        candidates = kb_new_vocab._get_alias_candidates("adam")
+        candidates = kb_new_vocab.get_alias_candidates("adam")
         assert len(candidates) == 1
-        assert candidates[0].entity_id == q2_hash
-        assert candidates[0].entity_id_ == "Q2"
-        assert candidates[0].alias == "adam"
+        assert candidates[0].entity == q2_hash
+        assert candidates[0].entity_ == "Q2"
+        assert candidates[0].alias == adam_hash
+        assert candidates[0].alias_ == "adam"
 
         assert kb_new_vocab.get_vector("Q2") == [2]
         assert_almost_equal(kb_new_vocab.get_prior_prob("Q2", "douglas"), 0.4)
@@ -586,20 +586,20 @@ def test_append_alias(nlp):
     mykb.add_alias(alias="adam", entities=["Q2"], probabilities=[0.9])
 
     # test the size of the relevant candidates
-    assert len(mykb._get_alias_candidates("douglas")) == 2
+    assert len(mykb.get_alias_candidates("douglas")) == 2
 
     # append an alias
     mykb.append_alias(alias="douglas", entity="Q1", prior_prob=0.2)
 
     # test the size of the relevant candidates has been incremented
-    assert len(mykb._get_alias_candidates("douglas")) == 3
+    assert len(mykb.get_alias_candidates("douglas")) == 3
 
     # append the same alias-entity pair again should not work (will throw a warning)
     with pytest.warns(UserWarning):
         mykb.append_alias(alias="douglas", entity="Q1", prior_prob=0.3)
 
     # test the size of the relevant candidates remained unchanged
-    assert len(mykb._get_alias_candidates("douglas")) == 3
+    assert len(mykb.get_alias_candidates("douglas")) == 3
 
 
 @pytest.mark.filterwarnings("ignore:\\[W036")
@@ -999,11 +999,11 @@ def test_kb_to_bytes():
     assert kb_2.contains_alias("Russ Cochran")
     assert kb_1.get_size_aliases() == kb_2.get_size_aliases()
     assert kb_1.get_alias_strings() == kb_2.get_alias_strings()
-    assert len(kb_1._get_alias_candidates("Russ Cochran")) == len(
-        kb_2._get_alias_candidates("Russ Cochran")
+    assert len(kb_1.get_alias_candidates("Russ Cochran")) == len(
+        kb_2.get_alias_candidates("Russ Cochran")
     )
-    assert len(kb_1._get_alias_candidates("Randomness")) == len(
-        kb_2._get_alias_candidates("Randomness")
+    assert len(kb_1.get_alias_candidates("Randomness")) == len(
+        kb_2.get_alias_candidates("Randomness")
     )
 
 
@@ -1084,6 +1084,7 @@ def test_scorer_links():
 @pytest.mark.parametrize(
     "name,config",
     [
+        ("entity_linker", {"@architectures": "spacy.EntityLinker.v1", "tok2vec": DEFAULT_TOK2VEC_MODEL}),
         ("entity_linker", {"@architectures": "spacy.EntityLinker.v2", "tok2vec": DEFAULT_TOK2VEC_MODEL}),
     ],
 )
@@ -1110,7 +1111,10 @@ def test_legacy_architectures(name, config):
         return mykb
 
     entity_linker = nlp.add_pipe(name, config={"model": config})
-    assert isinstance(entity_linker, EntityLinker)
+    if config["@architectures"] == "spacy.EntityLinker.v1":
+        assert isinstance(entity_linker, EntityLinker_v1)
+    else:
+        assert isinstance(entity_linker, EntityLinker)
     entity_linker.set_kb(create_kb)
     optimizer = nlp.initialize(get_examples=lambda: train_examples)
 
@@ -1294,7 +1298,6 @@ def test_threshold(meet_threshold: bool, config: Dict[str, Any]):
 
 
 def test_save_activations():
-def test_save_activations():
     nlp = English()
     vector_length = 3
     assert "Q2146908" not in nlp.vocab.strings
@@ -1309,7 +1312,7 @@ def test_save_activations():
         # create artificial KB - assign same prior weight to the two russ cochran's
         # Q2146908 (Russ Cochran): American golfer
         # Q7381115 (Russ Cochran): publisher
-        mykb = InMemoryLookupKB(vocab, entity_vector_length=vector_length)
+        mykb = KnowledgeBase(vocab, entity_vector_length=vector_length)
         mykb.add_entity(entity="Q2146908", freq=12, entity_vector=[6, -4, 3])
         mykb.add_entity(entity="Q7381115", freq=12, entity_vector=[9, 1, -7])
         mykb.add_alias(
