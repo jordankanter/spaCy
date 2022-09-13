@@ -2,10 +2,14 @@
 from typing import Callable, Dict, Iterable, Iterator, Optional, Tuple
 
 import srsly
-from thinc.api import Model, Optimizer, set_dropout_rate
+from thinc.api import set_dropout_rate, Model, Optimizer
+import warnings
 
 from ..tokens.doc cimport Doc
 
+from ..training import validate_examples
+from ..errors import Errors, Warnings
+from .pipe import Pipe, deserialize_config
 from .. import util
 from ..errors import Errors
 from ..language import Language
@@ -342,3 +346,11 @@ cdef class TrainablePipe(Pipe):
         deserialize["model"] = load_model
         util.from_disk(path, deserialize, exclude)
         return self
+
+    @property
+    def save_activations(self):
+        return self._save_activations
+
+    @save_activations.setter
+    def save_activations(self, save_activations: bool):
+        self._save_activations = save_activations

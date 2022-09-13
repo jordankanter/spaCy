@@ -16,7 +16,7 @@ from typing import (
 
 import numpy as np
 from cymem.cymem import Pool
-from thinc.types import Floats1d, Floats2d, Ints2d
+from thinc.types import ArrayXd, Floats1d, Floats2d, Ints2d, Ragged
 from .span import Span
 from .token import Token
 from .span_groups import SpanGroups
@@ -41,6 +41,7 @@ class Doc:
     max_length: int
     length: int
     sentiment: float
+    activations: Dict[str, Dict[str, Union[ArrayXd, Ragged]]]
     cats: Dict[str, float]
     user_hooks: Dict[str, Callable[..., Any]]
     user_token_hooks: Dict[str, Callable[..., Any]]

@@ -594,19 +594,21 @@ def test_set_candidates(name):
     assert docs[0].spans["candidates"][4].text == "Just a"
 
 
-@pytest.mark.parametrize("name", SPANCAT_COMPONENTS)
-@pytest.mark.parametrize("n_process", [1, 2])
-def test_spancat_multiprocessing(name, n_process):
-    if isinstance(get_current_ops, NumpyOps) or n_process < 2:
-        nlp = Language()
-        spancat = nlp.add_pipe(name, config={"spans_key": SPAN_KEY})
-        train_examples = make_examples(nlp)
-        nlp.initialize(get_examples=lambda: train_examples)
-        texts = [
-            "Just a sentence.",
-            "I like London and Berlin",
-            "I like Berlin",
-            "I eat ham.",
-        ]
-        docs = list(nlp.pipe(texts, n_process=n_process))
-        assert len(docs) == len(texts)
+def test_save_activations():
+    # Test if activations are correctly added to Doc when requested.
+    nlp = English()
+    spancat = nlp.add_pipe("spancat", config={"spans_key": SPAN_KEY})
+    train_examples = make_examples(nlp)
+    nlp.initialize(get_examples=lambda: train_examples)
+    nO = spancat.model.get_dim("nO")
+    assert nO == 2
+    assert set(spancat.labels) == {"LOC", "PERSON"}
+
+    doc = nlp("This is a test.")
+    assert "spancat" not in doc.activations
+
+    spancat.save_activations = True
+    doc = nlp("This is a test.")
+    assert set(doc.activations["spancat"].keys()) == {"indices", "scores"}
+    assert doc.activations["spancat"]["indices"].shape == (12, 2)
+    assert doc.activations["spancat"]["scores"].shape == (12, nO)
