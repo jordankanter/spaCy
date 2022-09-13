@@ -1,5 +1,5 @@
-import pickle
 from typing import cast
+import pickle
 
 import hypothesis.strategies as st
 import pytest
@@ -10,6 +10,7 @@ from spacy.lang.en import English
 from spacy.language import Language
 from spacy.pipeline._edit_tree_internals.edit_trees import EditTrees
 from spacy.pipeline.trainable_pipe import TrainablePipe
+from spacy.training import Example
 from spacy.strings import StringStore
 from spacy.training import Example
 from spacy.util import make_tempdir
@@ -213,53 +214,6 @@ def test_overfitting_IO(top_k):
     assert doc4[3].lemma_ == "egg"
 
 
-def test_is_distillable():
-    nlp = English()
-    lemmatizer = nlp.add_pipe("trainable_lemmatizer")
-    assert lemmatizer.is_distillable
-
-
-def test_distill():
-    teacher = English()
-    teacher_lemmatizer = teacher.add_pipe("trainable_lemmatizer")
-    teacher_lemmatizer.min_tree_freq = 1
-    train_examples = []
-    for t in TRAIN_DATA:
-        train_examples.append(Example.from_dict(teacher.make_doc(t[0]), t[1]))
-
-    optimizer = teacher.initialize(get_examples=lambda: train_examples)
-
-    for i in range(50):
-        losses = {}
-        teacher.update(train_examples, sgd=optimizer, losses=losses)
-    assert losses["trainable_lemmatizer"] < 0.00001
-
-    student = English()
-    student_lemmatizer = student.add_pipe("trainable_lemmatizer")
-    student_lemmatizer.min_tree_freq = 1
-    student_lemmatizer.initialize(
-        get_examples=lambda: train_examples, labels=teacher_lemmatizer.label_data
-    )
-
-    distill_examples = [
-        Example.from_dict(teacher.make_doc(t[0]), {}) for t in TRAIN_DATA
-    ]
-
-    for i in range(50):
-        losses = {}
-        student_lemmatizer.distill(
-            teacher_lemmatizer, distill_examples, sgd=optimizer, losses=losses
-        )
-    assert losses["trainable_lemmatizer"] < 0.00001
-
-    test_text = "She likes blue eggs"
-    doc = student(test_text)
-    assert doc[0].lemma_ == "she"
-    assert doc[1].lemma_ == "like"
-    assert doc[2].lemma_ == "blue"
-    assert doc[3].lemma_ == "egg"
-
-
 def test_lemmatizer_requires_labels():
     nlp = English()
     nlp.add_pipe("trainable_lemmatizer")
@@ -380,29 +334,6 @@ def test_empty_strings():
     no_change = trees.add("xyz", "xyz")
     empty = trees.add("", "")
     assert no_change == empty
-
-
-def test_save_activations():
-    nlp = English()
-    lemmatizer = cast(TrainablePipe, nlp.add_pipe("trainable_lemmatizer"))
-    lemmatizer.min_tree_freq = 1
-    train_examples = []
-    for t in TRAIN_DATA:
-        train_examples.append(Example.from_dict(nlp.make_doc(t[0]), t[1]))
-    nlp.initialize(get_examples=lambda: train_examples)
-    nO = lemmatizer.model.get_dim("nO")
-
-    doc = nlp("This is a test.")
-    assert "trainable_lemmatizer" not in doc.activations
-
-    lemmatizer.save_activations = True
-    doc = nlp("This is a test.")
-    assert list(doc.activations["trainable_lemmatizer"].keys()) == [
-        "probabilities",
-        "tree_ids",
-    ]
-    assert doc.activations["trainable_lemmatizer"]["probabilities"].shape == (5, nO)
-    assert doc.activations["trainable_lemmatizer"]["tree_ids"].shape == (5,)
 
 
 def test_save_activations():

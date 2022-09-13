@@ -1,5 +1,5 @@
-import random
 from typing import cast
+import random
 
 import numpy.random
 import pytest
@@ -13,16 +13,12 @@ from spacy.cli.evaluate import print_prf_per_type, print_textcats_auc_per_cat
 from spacy.lang.en import English
 from spacy.language import Language
 from spacy.pipeline import TextCategorizer, TrainablePipe
-from spacy.pipeline.textcat import (
-    single_label_bow_config,
-    single_label_cnn_config,
-    single_label_default_config,
-)
-from spacy.pipeline.textcat_multilabel import (
-    multi_label_bow_config,
-    multi_label_cnn_config,
-    multi_label_default_config,
-)
+from spacy.pipeline.textcat import single_label_bow_config
+from spacy.pipeline.textcat import single_label_cnn_config
+from spacy.pipeline.textcat import single_label_default_config
+from spacy.pipeline.textcat_multilabel import multi_label_bow_config
+from spacy.pipeline.textcat_multilabel import multi_label_cnn_config
+from spacy.pipeline.textcat_multilabel import multi_label_default_config
 from spacy.pipeline.tok2vec import DEFAULT_TOK2VEC_MODEL
 from spacy.scorer import Scorer
 from spacy.tokens import Doc, DocBin
@@ -104,9 +100,7 @@ def test_issue3611():
         optimizer = nlp.initialize()
         for i in range(3):
             losses = {}
-            batches = util.minibatch(
-                train_data, size=compounding(4.0, 32.0, 1.001).to_generator()
-            )
+            batches = util.minibatch(train_data, size=compounding(4.0, 32.0, 1.001))
 
             for batch in batches:
                 nlp.update(examples=batch, sgd=optimizer, drop=0.1, losses=losses)
@@ -143,9 +137,7 @@ def test_issue4030():
         optimizer = nlp.initialize()
         for i in range(3):
             losses = {}
-            batches = util.minibatch(
-                train_data, size=compounding(4.0, 32.0, 1.001).to_generator()
-            )
+            batches = util.minibatch(train_data, size=compounding(4.0, 32.0, 1.001))
 
             for batch in batches:
                 nlp.update(examples=batch, sgd=optimizer, drop=0.1, losses=losses)
@@ -303,7 +295,6 @@ def test_issue9904():
     nlp.initialize(get_examples)
 
     examples = get_examples()
-    scores = textcat.predict([eg.predicted for eg in examples])["probabilities"]
     scores = textcat.predict([eg.predicted for eg in examples])["probabilities"]
 
     loss = textcat.get_loss(examples, scores)[0]
@@ -474,8 +465,6 @@ def test_no_resize(name, textcat_config):
         # CNN
         ("textcat", {"@architectures": "spacy.TextCatReduce.v1", "tok2vec": DEFAULT_TOK2VEC_MODEL, "exclusive_classes": True, "use_reduce_first": True, "use_reduce_last": True, "use_reduce_max": True, "use_reduce_mean": True}),
         ("textcat_multilabel", {"@architectures": "spacy.TextCatReduce.v1", "tok2vec": DEFAULT_TOK2VEC_MODEL, "exclusive_classes": False, "use_reduce_first": True, "use_reduce_last": True, "use_reduce_max": True, "use_reduce_mean": True}),
-        ("textcat", {"@architectures": "spacy.TextCatReduce.v1", "tok2vec": DEFAULT_TOK2VEC_MODEL, "exclusive_classes": True, "use_reduce_first": True, "use_reduce_last": True, "use_reduce_max": True, "use_reduce_mean": True}),
-        ("textcat_multilabel", {"@architectures": "spacy.TextCatReduce.v1", "tok2vec": DEFAULT_TOK2VEC_MODEL, "exclusive_classes": False, "use_reduce_first": True, "use_reduce_last": True, "use_reduce_max": True, "use_reduce_mean": True}),
     ],
 )
 # fmt: on
@@ -611,12 +600,6 @@ def test_initialize_examples(name, get_examples, train_data):
         nlp.initialize(get_examples=lambda: None)
     with pytest.raises(TypeError):
         nlp.initialize(get_examples=get_examples())
-
-
-def test_is_distillable():
-    nlp = English()
-    textcat = nlp.add_pipe("textcat")
-    assert not textcat.is_distillable
 
 
 def test_overfitting_IO():
@@ -964,43 +947,13 @@ def test_textcat_multi_threshold():
 
 
 def test_save_activations():
-def test_save_activations():
     nlp = English()
-    textcat = cast(TrainablePipe, nlp.add_pipe("textcat"))
     textcat = cast(TrainablePipe, nlp.add_pipe("textcat"))
 
     train_examples = []
     for text, annotations in TRAIN_DATA_SINGLE_LABEL:
         train_examples.append(Example.from_dict(nlp.make_doc(text), annotations))
     nlp.initialize(get_examples=lambda: train_examples)
-    nO = textcat.model.get_dim("nO")
-
-    doc = nlp("This is a test.")
-    assert "textcat" not in doc.activations
-
-    textcat.save_activations = True
-    doc = nlp("This is a test.")
-    assert list(doc.activations["textcat"].keys()) == ["probabilities"]
-    assert doc.activations["textcat"]["probabilities"].shape == (nO,)
-
-
-def test_save_activations_multi():
-    nlp = English()
-    textcat = cast(TrainablePipe, nlp.add_pipe("textcat_multilabel"))
-
-    train_examples = []
-    for text, annotations in TRAIN_DATA_MULTI_LABEL:
-        train_examples.append(Example.from_dict(nlp.make_doc(text), annotations))
-    nlp.initialize(get_examples=lambda: train_examples)
-    nO = textcat.model.get_dim("nO")
-
-    doc = nlp("This is a test.")
-    assert "textcat_multilabel" not in doc.activations
-
-    textcat.save_activations = True
-    doc = nlp("This is a test.")
-    assert list(doc.activations["textcat_multilabel"].keys()) == ["probabilities"]
-    assert doc.activations["textcat_multilabel"]["probabilities"].shape == (nO,)
     nO = textcat.model.get_dim("nO")
 
     doc = nlp("This is a test.")
