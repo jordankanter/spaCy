@@ -54,6 +54,8 @@ cdef class Doc:
 
     cdef public dict activations
 
+    cdef public dict activations
+
     cdef public dict user_hooks
     cdef public dict user_token_hooks
     cdef public dict user_span_hooks
