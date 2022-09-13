@@ -4,8 +4,8 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
 
 import numpy as np
 import srsly
-from thinc.api import Config, Model, NumpyOps, SequenceCategoricalCrossentropy
-from thinc.types import Floats2d, Ints2d
+from thinc.api import Config, Model, SequenceCategoricalCrossentropy
+from thinc.types import ArrayXd, Floats2d, Ints1d
 
 from .. import util
 from ..errors import Errors
@@ -20,6 +20,9 @@ from .trainable_pipe import TrainablePipe
 
 # The cutoff value of *top_k* above which an alternative method is used to process guesses.
 TOP_K_GUARDRAIL = 20
+
+
+ActivationsT = Dict[str, Union[List[Floats2d], List[Ints1d]]]
 
 
 default_model_config = """
@@ -50,6 +53,7 @@ DEFAULT_EDIT_TREE_LEMMATIZER_MODEL = Config().from_str(default_model_config)["mo
         "overwrite": False,
         "top_k": 1,
         "scorer": {"@scorers": "spacy.lemmatizer_scorer.v1"},
+        "save_activations": False,
     },
     default_score_weights={"lemma_acc": 1.0},
 )
@@ -62,6 +66,7 @@ def make_edit_tree_lemmatizer(
     overwrite: bool,
     top_k: int,
     scorer: Optional[Callable],
+    save_activations: bool,
 ):
     """Construct an EditTreeLemmatizer component."""
     return EditTreeLemmatizer(
@@ -73,6 +78,7 @@ def make_edit_tree_lemmatizer(
         overwrite=overwrite,
         top_k=top_k,
         scorer=scorer,
+        save_activations=save_activations,
     )
 
 
@@ -92,6 +98,7 @@ class EditTreeLemmatizer(TrainablePipe):
         overwrite: bool = False,
         top_k: int = 1,
         scorer: Optional[Callable] = lemmatizer_score,
+        save_activations: bool = False,
     ):
         """
         Construct an edit tree lemmatizer.
@@ -103,6 +110,7 @@ class EditTreeLemmatizer(TrainablePipe):
             frequency in the training data.
         overwrite (bool): overwrite existing lemma annotations.
         top_k (int): try to apply at most the k most probable edit trees.
+        save_activations (bool): save model activations in Doc when annotating.
         """
         self.vocab = vocab
         self.model = model
@@ -117,7 +125,7 @@ class EditTreeLemmatizer(TrainablePipe):
 
         self.cfg: Dict[str, Any] = {"labels": []}
         self.scorer = scorer
-        self.numpy_ops = NumpyOps()
+        self.save_activations = save_activations
 
     def get_loss(
         self, examples: Iterable[Example], scores: List[Floats2d]
@@ -146,31 +154,24 @@ class EditTreeLemmatizer(TrainablePipe):
 
         return float(loss), d_scores
 
-    def predict(self, docs: Iterable[Doc]) -> List[Ints2d]:
-        if self.top_k == 1:
-            scores2guesses = self._scores2guesses_top_k_equals_1
-        elif self.top_k <= TOP_K_GUARDRAIL:
-            scores2guesses = self._scores2guesses_top_k_greater_1
-        else:
-            scores2guesses = self._scores2guesses_top_k_guardrail
-        # The behaviour of *_scores2guesses_top_k_greater_1()* is efficient for values
-        # of *top_k>1* that are likely to be useful when the edit tree lemmatizer is used
-        # for its principal purpose of lemmatizing tokens. However, the code could also
-        # be used for other purposes, and with very large values of *top_k* the method
-        # becomes inefficient. In such cases, *_scores2guesses_top_k_guardrail()* is used
-        # instead.
+    def predict(self, docs: Iterable[Doc]) -> ActivationsT:
         n_docs = len(list(docs))
         if not any(len(doc) for doc in docs):
             # Handle cases where there are no tokens in any docs.
             n_labels = len(self.cfg["labels"])
-            guesses: List[Ints2d] = [self.model.ops.alloc2i(0, n_labels) for _ in docs]
+            guesses: List[Ints1d] = [
+                self.model.ops.alloc((0,), dtype="i") for doc in docs
+            ]
+            scores: List[Floats2d] = [
+                self.model.ops.alloc((0, n_labels), dtype="i") for doc in docs
+            ]
             assert len(guesses) == n_docs
-            return guesses
+            return {"probabilities": scores, "tree_ids": guesses}
         scores = self.model.predict(docs)
         assert len(scores) == n_docs
         guesses = scores2guesses(docs, scores)
         assert len(guesses) == n_docs
-        return guesses
+        return {"probabilities": scores, "tree_ids": guesses}
 
     def _scores2guesses_top_k_equals_1(self, docs, scores):
         guesses = []
@@ -230,8 +231,13 @@ class EditTreeLemmatizer(TrainablePipe):
 
         return guesses
 
-    def set_annotations(self, docs: Iterable[Doc], batch_tree_ids):
+    def set_annotations(self, docs: Iterable[Doc], activations: ActivationsT):
+        batch_tree_ids = activations["tree_ids"]
         for i, doc in enumerate(docs):
+            if self.save_activations:
+                doc.activations[self.name] = {}
+                for act_name, acts in activations.items():
+                    doc.activations[self.name][act_name] = acts[i]
             doc_tree_ids = batch_tree_ids[i]
             if hasattr(doc_tree_ids, "get"):
                 doc_tree_ids = doc_tree_ids.get()
