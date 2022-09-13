@@ -1,7 +1,8 @@
-from typing import Any, Callable, Dict, Iterable, cast
+from typing import Callable, Iterable, Dict, Any, cast
 
 import pytest
 from numpy.testing import assert_equal
+from thinc.types import Ragged
 from thinc.types import Ragged
 
 from spacy import Language, registry, util
@@ -10,8 +11,8 @@ from spacy.compat import pickle
 from spacy.kb import Candidate, InMemoryLookupKB, KnowledgeBase
 from spacy.lang.en import English
 from spacy.ml import load_kb
-from spacy.ml.models.entity_linker import build_span_maker, get_candidates
 from spacy.pipeline import EntityLinker, TrainablePipe
+from spacy.pipeline.legacy import EntityLinker_v1
 from spacy.pipeline.tok2vec import DEFAULT_TOK2VEC_MODEL
 from spacy.scorer import Scorer
 from spacy.tests.util import make_tempdir
@@ -1293,6 +1294,7 @@ def test_threshold(meet_threshold: bool, config: Dict[str, Any]):
 
 
 def test_save_activations():
+def test_save_activations():
     nlp = English()
     vector_length = 3
     assert "Q2146908" not in nlp.vocab.strings
@@ -1307,7 +1309,7 @@ def test_save_activations():
         # create artificial KB - assign same prior weight to the two russ cochran's
         # Q2146908 (Russ Cochran): American golfer
         # Q7381115 (Russ Cochran): publisher
-        mykb = InMemoryLookupKB(vocab, entity_vector_length=vector_length)
+        mykb = KnowledgeBase(vocab, entity_vector_length=vector_length)
         mykb.add_entity(entity="Q2146908", freq=12, entity_vector=[6, -4, 3])
         mykb.add_entity(entity="Q7381115", freq=12, entity_vector=[9, 1, -7])
         mykb.add_alias(
