@@ -1,3 +1,7 @@
+from typing import Iterable, Tuple, Optional, Dict, List, Callable, Any, Union
+from thinc.api import get_array_module, Model, Optimizer, set_dropout_rate, Config
+from thinc.types import Floats2d
+import numpy
 from itertools import islice
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
