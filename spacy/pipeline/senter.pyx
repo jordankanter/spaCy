@@ -1,12 +1,16 @@
 # cython: infer_types=True, profile=True, binding=True
+from typing import Dict, Iterable, Optional, Callable, List, Union
 from itertools import islice
 from typing import Callable, Dict, Iterable, List, Optional, Union
 
-from thinc.api import Config, Model, SequenceCategoricalCrossentropy
+import srsly
+from thinc.api import Model, SequenceCategoricalCrossentropy, Config
+from thinc.types import Floats2d, Ints1d
 
 from ..tokens.doc cimport Doc
 
-from .. import util
+from .tagger import ActivationsT, Tagger
+from ..language import Language
 from ..errors import Errors
 from ..language import Language
 from ..scorer import Scorer
@@ -40,8 +44,21 @@ DEFAULT_SENTER_MODEL = Config().from_str(default_model_config)["model"]
         "scorer": {"@scorers": "spacy.senter_scorer.v1"},
         "save_activations": False,
     },
+    default_config={
+        "model": DEFAULT_SENTER_MODEL,
+        "overwrite": False,
+        "scorer": {"@scorers": "spacy.senter_scorer.v1"},
+        "save_activations": False,
+    },
     default_score_weights={"sents_f": 1.0, "sents_p": 0.0, "sents_r": 0.0},
 )
+def make_senter(nlp: Language,
+                name: str,
+                model: Model,
+                overwrite: bool,
+                scorer: Optional[Callable],
+                save_activations: bool):
+    return SentenceRecognizer(nlp.vocab, model, name, overwrite=overwrite, scorer=scorer, save_activations=save_activations)
 def make_senter(nlp: Language,
                 name: str,
                 model: Model,
@@ -79,6 +96,7 @@ class SentenceRecognizer(Tagger):
         overwrite=False,
         scorer=senter_score,
         save_activations: bool = False,
+        save_activations: bool = False,
     ):
         """Initialize a sentence recognizer.
 
@@ -90,6 +108,7 @@ class SentenceRecognizer(Tagger):
         scorer (Optional[Callable]): The scoring method. Defaults to
             Scorer.score_spans for the attribute "sents".
         save_activations (bool): save model activations in Doc when annotating.
+        save_activations (bool): save model activations in Doc when annotating.
 
         DOCS: https://spacy.io/api/sentencerecognizer#init
         """
@@ -99,6 +118,7 @@ class SentenceRecognizer(Tagger):
         self._rehearsal_model = None
         self.cfg = {"overwrite": overwrite}
         self.scorer = scorer
+        self.save_activations = save_activations
         self.save_activations = save_activations
 
     @property
@@ -118,19 +138,26 @@ class SentenceRecognizer(Tagger):
         return None
 
     def set_annotations(self, docs: Iterable[Doc], activations: ActivationsT):
+    def set_annotations(self, docs: Iterable[Doc], activations: ActivationsT):
         """Modify a batch of documents, using pre-computed scores.
 
         docs (Iterable[Doc]): The documents to modify.
         activations (ActivationsT): The activations used for setting annotations, produced by SentenceRecognizer.predict.
+        activations (ActivationsT): The activations used for setting annotations, produced by SentenceRecognizer.predict.
 
         DOCS: https://spacy.io/api/sentencerecognizer#set_annotations
         """
+        batch_tag_ids = activations["label_ids"]
         batch_tag_ids = activations["label_ids"]
         if isinstance(docs, Doc):
             docs = [docs]
         cdef Doc doc
         cdef bint overwrite = self.cfg["overwrite"]
         for i, doc in enumerate(docs):
+            if self.save_activations:
+                doc.activations[self.name] = {}
+                for act_name, acts in activations.items():
+                    doc.activations[self.name][act_name] = acts[i]
             if self.save_activations:
                 doc.activations[self.name] = {}
                 for act_name, acts in activations.items():
