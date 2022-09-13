@@ -1,6 +1,8 @@
-from dataclasses import dataclass
-from functools import partial
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
+from typing import List, Dict, Callable, Tuple, Optional, Iterable, Any, cast
+from typing import Union
+from thinc.api import Config, Model, get_current_ops, set_dropout_rate, Ops
+from thinc.api import Optimizer
+from thinc.types import Ragged, Ints2d, Floats2d, Ints1d
 
 import numpy
 from thinc.api import Config, Model, Ops, Optimizer, get_current_ops, set_dropout_rate
@@ -15,6 +17,9 @@ from ..training import Example, validate_examples
 from ..util import registry
 from ..vocab import Vocab
 from .trainable_pipe import TrainablePipe
+
+ActivationsT = Dict[str, Union[Floats2d, Ragged]]
+
 
 spancat_default_config = """
 [model]
@@ -170,6 +175,7 @@ def build_preset_spans_suggester(spans_key: str) -> Suggester:
         "model": DEFAULT_SPANCAT_MODEL,
         "suggester": {"@misc": "spacy.ngram_suggester.v1", "sizes": [1, 2, 3]},
         "scorer": {"@scorers": "spacy.spancat_scorer.v1"},
+        "save_activations": False,
     },
     default_score_weights={"spans_sc_f": 1.0, "spans_sc_p": 0.0, "spans_sc_r": 0.0},
 )
@@ -182,6 +188,7 @@ def make_spancat(
     scorer: Optional[Callable],
     threshold: float,
     max_positive: Optional[int],
+    save_activations: bool,
 ) -> "SpanCategorizer":
     """Create a SpanCategorizer component and configure it for multi-label
     classification to be able to assign multiple labels for each span.
@@ -209,6 +216,7 @@ def make_spancat(
         0.5.
     max_positive (Optional[int]): Maximum number of labels to consider positive
         per span. Defaults to None, indicating no limit.
+        save_activations (bool): save model activations in Doc when annotating.
     """
     return SpanCategorizer(
         nlp.vocab,
@@ -287,6 +295,7 @@ def make_spancat_singlelabel(
         add_negative_label=True,
         threshold=None,
         scorer=scorer,
+        save_activations=save_activations,
     )
 
 
@@ -349,6 +358,7 @@ class SpanCategorizer(TrainablePipe):
         max_positive: Optional[int] = None,
         threshold: Optional[float] = 0.5,
         scorer: Optional[Callable] = spancat_score,
+        save_activations: bool = False,
     ) -> None:
         """Initialize the multi-label or multi-class span categorizer.
 
@@ -398,9 +408,7 @@ class SpanCategorizer(TrainablePipe):
         self.model = model
         self.name = name
         self.scorer = scorer
-        self.add_negative_label = add_negative_label
-        if not allow_overlap and max_positive is not None and max_positive > 1:
-            raise ValueError(Errors.E1051.format(max_positive=max_positive))
+        self.save_activations = save_activations
 
     @property
     def key(self) -> str:
@@ -458,28 +466,7 @@ class SpanCategorizer(TrainablePipe):
         """
         return list(self.labels)
 
-    @property
-    def _label_map(self) -> Dict[str, int]:
-        """RETURNS (Dict[str, int]): The label map."""
-        return {label: i for i, label in enumerate(self.labels)}
-
-    @property
-    def _n_labels(self) -> int:
-        """RETURNS (int): Number of labels."""
-        if self.add_negative_label:
-            return len(self.labels) + 1
-        else:
-            return len(self.labels)
-
-    @property
-    def _negative_label_i(self) -> Union[int, None]:
-        """RETURNS (Union[int, None]): Index of the negative label."""
-        if self.add_negative_label:
-            return len(self.label_data)
-        else:
-            return None
-
-    def predict(self, docs: Iterable[Doc]):
+    def predict(self, docs: Iterable[Doc]) -> ActivationsT:
         """Apply the pipeline's model to a batch of docs, without modifying them.
 
         docs (Iterable[Doc]): The documents to predict.
@@ -488,11 +475,8 @@ class SpanCategorizer(TrainablePipe):
         DOCS: https://spacy.io/api/spancategorizer#predict
         """
         indices = self.suggester(docs, ops=self.model.ops)
-        if indices.lengths.sum() == 0:
-            scores = self.model.ops.alloc2f(0, 0)
-        else:
-            scores = self.model.predict((docs, indices))  # type: ignore
-        return indices, scores
+        scores = self.model.predict((docs, indices))  # type: ignore
+        return {"indices": indices, "scores": scores}
 
     def set_candidates(
         self, docs: Iterable[Doc], *, candidates_key: str = "candidates"
@@ -512,32 +496,32 @@ class SpanCategorizer(TrainablePipe):
             for index in candidates.dataXd:
                 doc.spans[candidates_key].append(doc[index[0] : index[1]])
 
-    def set_annotations(self, docs: Iterable[Doc], indices_scores) -> None:
+    def set_annotations(self, docs: Iterable[Doc], activations: ActivationsT) -> None:
         """Modify a batch of Doc objects, using pre-computed scores.
 
         docs (Iterable[Doc]): The documents to modify.
-        scores: The scores to set, produced by SpanCategorizer.predict.
+        activations: ActivationsT: The activations, produced by SpanCategorizer.predict.
 
         DOCS: https://spacy.io/api/spancategorizer#set_annotations
         """
-        indices, scores = indices_scores
+        labels = self.labels
+
+        indices = activations["indices"]
+        assert isinstance(indices, Ragged)
+        scores = cast(Floats2d, activations["scores"])
+
         offset = 0
         for i, doc in enumerate(docs):
             indices_i = indices[i].dataXd
-            allow_overlap = cast(bool, self.cfg["allow_overlap"])
-            if self.cfg["max_positive"] == 1:
-                doc.spans[self.key] = self._make_span_group_singlelabel(
-                    doc,
-                    indices_i,
-                    scores[offset : offset + indices.lengths[i]],
-                    allow_overlap,
-                )
-            else:
-                doc.spans[self.key] = self._make_span_group_multilabel(
-                    doc,
-                    indices_i,
-                    scores[offset : offset + indices.lengths[i]],
-                )
+            if self.save_activations:
+                doc.activations[self.name] = {}
+                doc.activations[self.name]["indices"] = indices_i
+                doc.activations[self.name]["scores"] = scores[
+                    offset : offset + indices.lengths[i]
+                ]
+            doc.spans[self.key] = self._make_span_group(
+                doc, indices_i, scores[offset : offset + indices.lengths[i]], labels  # type: ignore[arg-type]
+            )
             offset += indices.lengths[i]
 
     def update(
