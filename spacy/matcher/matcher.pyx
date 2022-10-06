@@ -20,6 +20,9 @@ from ..tokens.span cimport Span
 from ..tokens.token cimport Token
 from ..typedefs cimport attr_t
 
+from ..schemas import validate_token_pattern
+from ..errors import Errors, MatchPatternError, Warnings
+from ..strings cimport get_string_id
 from ..attrs import IDS
 from ..errors import Errors, MatchPatternError, Warnings
 from ..schemas import validate_token_pattern
