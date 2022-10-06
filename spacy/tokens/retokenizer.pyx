@@ -15,9 +15,7 @@ from .token cimport Token
 
 from ..attrs import intify_attrs
 from ..errors import Errors
-from ..strings import get_string_id
-from ..util import SimpleFrozenDict
-from .underscore import is_writable_attr
+from ..strings cimport get_string_id
 
 
 cdef class Retokenizer:
