@@ -1,3 +1,6 @@
+from libc.stdint cimport int64_t, uint32_t
+from libcpp.vector cimport vector
+from libcpp.set cimport set
 from cymem.cymem cimport Pool
 from libc.stdint cimport int64_t, uint32_t
 from libcpp.set cimport set

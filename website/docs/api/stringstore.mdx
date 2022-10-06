@@ -49,6 +49,8 @@ Get the number of strings in the store.
 
 Retrieve a string from a given hash. If a string is passed as the input, add it
 to the store and return its hash.
+Retrieve a string from a given hash. If a string is passed as the input, add it
+to the store and return its hash.
 
 > #### Example
 >
@@ -63,9 +65,14 @@ to the store and return its hash.
 | ---------------- | ---------------------------------------------------------------------------- |
 | `string_or_hash` | The hash value to lookup or the string to store. ~~Union[str, int]~~         |
 | **RETURNS**      | The stored string or the hash of the newly added string. ~~Union[str, int]~~ |
+| Name             | Description                                                                  |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `string_or_hash` | The hash value to lookup or the string to store. ~~Union[str, int]~~         |
+| **RETURNS**      | The stored string or the hash of the newly added string. ~~Union[str, int]~~ |
 
 ## StringStore.\_\_contains\_\_ {id="contains",tag="method"}
 
+Check whether a string or a hash is in the store.
 Check whether a string or a hash is in the store.
 
 > #### Example
@@ -80,9 +87,14 @@ Check whether a string or a hash is in the store.
 | ---------------- | ------------------------------------------------------- |
 | `string_or_hash` | The string or hash to check. ~~Union[str, int]~~        |
 | **RETURNS**      | Whether the store contains the string or hash. ~~bool~~ |
+| Name             | Description                                             |
+| ---------------- | ------------------------------------------------------- |
+| `string_or_hash` | The string or hash to check. ~~Union[str, int]~~        |
+| **RETURNS**      | Whether the store contains the string or hash. ~~bool~~ |
 
 ## StringStore.\_\_iter\_\_ {id="iter",tag="method"}
 
+Iterate over the stored strings in insertion order.
 Iterate over the stored strings in insertion order.
 
 > #### Example
@@ -96,8 +108,11 @@ Iterate over the stored strings in insertion order.
 | Name        | Description                    |
 | ----------- | ------------------------------ |
 | **RETURNS** | A string in the store. ~~str~~ |
+| Name        | Description                    |
+| ----------- | ------------------------------ |
+| **RETURNS** | A string in the store. ~~str~~ |
 
-## StringStore.items {id="items", tag="method", version="4"}
+## StringStore.items {#iter tag="method" new="4"}
 
 Iterate over the stored string-hash pairs in insertion order.
 
@@ -113,7 +128,7 @@ Iterate over the stored string-hash pairs in insertion order.
 | ----------- | ------------------------------------------------------ |
 | **RETURNS** | A list of string-hash pairs. ~~List[Tuple[str, int]]~~ |
 
-## StringStore.keys {id="keys", tag="method", version="4"}
+## StringStore.keys {#iter tag="method" new="4"}
 
 Iterate over the stored strings in insertion order.
 
@@ -129,7 +144,7 @@ Iterate over the stored strings in insertion order.
 | ----------- | -------------------------------- |
 | **RETURNS** | A list of strings. ~~List[str]~~ |
 
-## StringStore.values {id="values", tag="method", version="4"}
+## StringStore.values {#iter tag="method" new="4"}
 
 Iterate over the stored string hashes in insertion order.
 
@@ -165,6 +180,7 @@ Add a string to the `StringStore`.
 | `string`    | The string to add. ~~str~~       |
 | **RETURNS** | The string's hash value. ~~int~~ |
 
+## StringStore.to_disk {#to_disk tag="method"}
 ## StringStore.to_disk {#to_disk tag="method"}
 
 Save the current state to a directory.

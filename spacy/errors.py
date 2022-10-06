@@ -256,6 +256,8 @@ class Errors(metaclass=ErrorsWithCodes):
             "https://spacy.io/usage/models")
     E011 = ("Unknown operator: '{op}'. Options: {opts}")
     E012 = ("Cannot add pattern for zero tokens to matcher.\nKey: {key}")
+    E016 = ("MultitaskObjective target should be function or one of: dep, "
+            "tag, ent, dep_tag_offset, ent_tag.")
     E017 = ("Can only add 'str' inputs to StringStore. Got type: {value_type}")
     E018 = ("Can't retrieve string for hash '{hash_value}'. This usually "
             "refers to an issue with the `Vocab` or `StringStore`.")
@@ -982,6 +984,8 @@ class Errors(metaclass=ErrorsWithCodes):
 
     # v4 error strings
     E4000 = ("Expected a Doc as input, but got: '{type}'")
+    E4001 = ("Expected input to be one of the following types: ({expected_types}), "
+             "but got '{received_type}'")
 
 
 # Deprecated model shortcuts, only used in errors and warnings
