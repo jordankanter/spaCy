@@ -18,6 +18,8 @@ from .. import Errors
 from ..strings cimport get_string_id
 from ..structs cimport EdgeC, GraphC
 from ..typedefs cimport hash_t
+from ..strings cimport get_string_id
+from ..structs cimport EdgeC, GraphC
 
 from .token import Token
 
@@ -131,9 +133,9 @@ cdef class Node:
 
         For instance, `node.head(i=1)` will get the head of the second edge that
         this node is a tail of. `node.head(i=1, label="ARG0")` will further
-        check that the second edge has the label `"ARG0"`. 
+        check that the second edge has the label `"ARG0"`.
 
-        If no matching node can be found, the graph's NoneNode is returned. 
+        If no matching node can be found, the graph's NoneNode is returned.
         """
         return self.headed(i=i, label=label)
 
@@ -141,14 +143,14 @@ cdef class Node:
         """Get the tail of the first matching edge, searching by index, label,
         both or neither.
 
-        If no matching node can be found, the graph's NoneNode is returned. 
+        If no matching node can be found, the graph's NoneNode is returned.
         """
         return self.tailed(i=i, label=label).tail
 
     def sibling(self, i=None, label=None):
         """Get the first matching sibling node. Two nodes are siblings if they
         are both tails of the same head.
-        If no matching node can be found, the graph's NoneNode is returned. 
+        If no matching node can be found, the graph's NoneNode is returned.
         """
         if i is None:
             siblings = self.siblings(label=label)
@@ -337,10 +339,10 @@ cdef class NoneNode(Node):
         return self
 
     def walk_heads(self):
-        yield from [] 
+        yield from []
 
     def walk_tails(self):
-        yield from [] 
+        yield from []
 
 
 cdef class Graph:
@@ -387,7 +389,7 @@ cdef class Graph:
             be labelled with the empty string (""). If `labels` is not `None`,
             it must have the same length as the `edges` argument.
         weights (Optional[List[float]]): A list of weights for the provided edges.
-            If None, all of the edges specified by the edges argument will 
+            If None, all of the edges specified by the edges argument will
             have the weight 0.0. If `weights` is not `None`, it must have the
             same length as the `edges` argument.
         """
@@ -486,7 +488,7 @@ cdef class Graph:
         """
         if isinstance(indices, Node):
             return indices
-        cdef vector[int32_t] node 
+        cdef vector[int32_t] node
         node.reserve(len(indices))
         for idx in indices:
             node.push_back(idx)
@@ -499,7 +501,7 @@ cdef class Graph:
         """
         if isinstance(indices, Node):
             return indices
-        cdef vector[int32_t] node 
+        cdef vector[int32_t] node
         node.reserve(len(indices))
         for idx in indices:
             node.push_back(idx)
@@ -588,7 +590,7 @@ cdef int get_head_nodes(vector[int]& output, const GraphC* graph, int node) nogi
     if todo == 0:
         return 0
     output.reserve(output.size() + todo)
-    start = graph.first_head[node] 
+    start = graph.first_head[node]
     end = graph.edges.size()
     for i in range(start, end):
         if todo <= 0:
@@ -604,7 +606,7 @@ cdef int get_tail_nodes(vector[int]& output, const GraphC* graph, int node) nogi
     if todo == 0:
         return 0
     output.reserve(output.size() + todo)
-    start = graph.first_tail[node] 
+    start = graph.first_tail[node]
     end = graph.edges.size()
     for i in range(start, end):
         if todo <= 0:
@@ -633,7 +635,7 @@ cdef int get_head_edges(vector[int]& output, const GraphC* graph, int node) nogi
     if todo == 0:
         return 0
     output.reserve(output.size() + todo)
-    start = graph.first_head[node] 
+    start = graph.first_head[node]
     end = graph.edges.size()
     for i in range(start, end):
         if todo <= 0:
@@ -649,7 +651,7 @@ cdef int get_tail_edges(vector[int]& output, const GraphC* graph, int node) nogi
     if todo == 0:
         return 0
     output.reserve(output.size() + todo)
-    start = graph.first_tail[node] 
+    start = graph.first_tail[node]
     end = graph.edges.size()
     for i in range(start, end):
         if todo <= 0:
