@@ -1,9 +1,7 @@
 # cython: infer_types=True
-from typing import Iterable, Iterator, List, Optional, Tuple, Union
-
+from typing import Optional, Union, Iterable, Tuple, Callable, Any, List, Iterator
+cimport cython
 from libc.stdint cimport uint32_t
-from libc.string cimport memcpy
-from libcpp.set cimport set
 from murmurhash.mrmr cimport hash64
 
 import srsly
@@ -16,11 +14,14 @@ from .symbols import IDS as SYMBOLS_BY_STR
 from .symbols import NAMES as SYMBOLS_BY_INT
 
 
+
 cdef class StringStore:
+    """Look up strings by 64-bit hashes. Implicitly handles reserved symbols.
     """Look up strings by 64-bit hashes. Implicitly handles reserved symbols.
 
     DOCS: https://spacy.io/api/stringstore
     """
+    def __init__(self, strings: Optional[Iterable[str]] = None):
     def __init__(self, strings: Optional[Iterable[str]] = None):
         """Create the StringStore.
 
@@ -32,34 +33,16 @@ cdef class StringStore:
             for string in strings:
                 self.add(string)
 
-    def __getitem__(self, object string_or_id):
-        """Retrieve a string from a given hash, or vice versa.
+    def __getitem__(self, string_or_hash: Union[str, int]) -> Union[str, int]:
+        """Retrieve a string from a given hash. If a string
+        is passed as the input, add it to the store and return
+        its hash.
 
-        string_or_id (bytes, str or uint64): The value to encode.
-        Returns (str / uint64): The value to be retrieved.
+        string_or_hash (int / str): The hash value to lookup or the string to store.
+        RETURNS (str / int): The stored string or the hash of the newly added string.
         """
-        cdef hash_t str_hash
-        cdef Utf8Str* utf8str = NULL
-
-        if isinstance(string_or_id, str):
-            if len(string_or_id) == 0:
-                return 0
-
-            # Return early if the string is found in the symbols LUT.
-            symbol = SYMBOLS_BY_STR.get(string_or_id, None)
-            if symbol is not None:
-                return symbol
-            else:
-                return hash_string(string_or_id)
-        elif isinstance(string_or_id, bytes):
-            return hash_utf8(string_or_id, len(string_or_id))
-        elif _try_coerce_to_hash(string_or_id, &str_hash):
-            if str_hash == 0:
-                return ""
-            elif str_hash in SYMBOLS_BY_INT:
-                return SYMBOLS_BY_INT[str_hash]
-            else:
-                utf8str = <Utf8Str*>self._map.get(str_hash)
+        if isinstance(string_or_hash, str):
+            return self.add(string_or_hash)
         else:
             return self._get_interned_str(string_or_hash)
 
@@ -129,13 +112,24 @@ cdef class StringStore:
         if isinstance(string_or_hash, str):
             return string_or_hash
         else:
-            # TODO: Raise an error instead
-            return self._map.get(string_or_id) is not NULL
+            return self._get_interned_str(string_or_hash)
 
-        if str_hash in SYMBOLS_BY_INT:
-            return True
-        else:
-            return self._map.get(str_hash) is not NULL
+    def items(self) -> List[Tuple[str, int]]:
+        """Iterate over the stored strings and their hashes in insertion order.
+
+        RETURNS: A list of string-hash pairs.
+        """
+        # Even though we internally store the hashes as keys and the strings as
+        # values, we invert the order in the public API to keep it consistent with
+        # the implementation of the `__iter__` method (where we wish to iterate over
+        # the strings in the store).
+        cdef int i
+        pairs = [None] * self._keys.size()
+        for i in range(self._keys.size()):
+            str_hash = self._keys[i]
+            utf8str = <Utf8Str*>self._map.get(str_hash)
+            pairs[i] = (self._decode_str_repr(utf8str), str_hash)
+        return pairs
 
     def keys(self) -> List[str]:
         """Iterate over the stored strings in insertion order.
@@ -210,9 +204,30 @@ cdef class StringStore:
         self.mem = Pool()
         self._map = PreshMap()
         self._keys.clear()
+        self._keys.clear()
         for string in strings:
             self.add(string)
 
+    def _get_interned_str(self, hash_value: int) -> str:
+        cdef hash_t str_hash
+        if not _try_coerce_to_hash(hash_value, &str_hash):
+            raise TypeError(Errors.E4001.format(expected_types="'int'", received_type=type(hash_value)))
+
+        # Handle reserved symbols and empty strings correctly.
+        if str_hash == 0:
+            return ""
+
+        symbol = SYMBOLS_BY_INT.get(str_hash)
+        if symbol is not None:
+            return symbol
+
+        utf8str = <Utf8Str*>self._map.get(str_hash)
+        if utf8str is NULL:
+            raise KeyError(Errors.E018.format(hash_value=str_hash))
+        else:
+            return self._decode_str_repr(utf8str)
+
+    cdef hash_t _intern_str(self, str string):
     def _get_interned_str(self, hash_value: int) -> str:
         cdef hash_t str_hash
         if not _try_coerce_to_hash(hash_value, &str_hash):
@@ -237,8 +252,13 @@ cdef class StringStore:
         # 0 means missing, but we don't bother offsetting the index.
         chars = string.encode('utf-8')
         cdef hash_t key = hash64(<unsigned char*>chars, len(chars), 1)
+        chars = string.encode('utf-8')
+        cdef hash_t key = hash64(<unsigned char*>chars, len(chars), 1)
         cdef Utf8Str* value = <Utf8Str*>self._map.get(key)
         if value is not NULL:
+            return key
+
+        value = self._allocate_str_repr(<unsigned char*>chars, len(chars))
             return key
 
         value = self._allocate_str_repr(<unsigned char*>chars, len(chars))
@@ -250,6 +270,7 @@ cdef class StringStore:
         cdef int n_length_bytes
         cdef int i
         cdef Utf8Str* string = <Utf8Str*>self.mem.alloc(1, sizeof(Utf8Str))
+        cdef uint32_t ulength = length
         if length < sizeof(string.s):
             string.s[0] = <unsigned char>length
             memcpy(&string.s[1], chars, length)
@@ -307,7 +328,7 @@ cpdef hash_t get_string_id(object string_or_hash) except -1:
 
     try:
         return hash_string(string_or_hash)
-    except:   # no-cython-lint
+    except:
         if _try_coerce_to_hash(string_or_hash, &str_hash):
             # Coerce the integral key to the expected primitive hash type.
             # This ensures that custom/overloaded "primitive" data types
@@ -324,5 +345,6 @@ cdef inline bint _try_coerce_to_hash(object key, hash_t* out_hash):
     try:
         out_hash[0] = key
         return True
-    except:  # no-cython-lint
+    except:
         return False
+
