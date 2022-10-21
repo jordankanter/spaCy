@@ -63,12 +63,10 @@ try:
 except ImportError:
     cupy = None
 
-# These are functions that were previously (v2.x) available from spacy.util
-# and have since moved to Thinc. We're importing them here so people's code
-# doesn't break, but they should always be imported from Thinc from now on,
-# not from spacy.util.
-from thinc.api import compounding, decaying, fix_random_seed  # noqa: F401
 
+from .symbols import ORTH
+from .compat import cupy, CudaStream, is_windows, importlib_metadata
+from .errors import Errors, Warnings, OLD_MODEL_SHORTCUTS
 from . import about
 from .compat import CudaStream, cupy, importlib_metadata, is_windows
 from .errors import OLD_MODEL_SHORTCUTS, Errors, Warnings
