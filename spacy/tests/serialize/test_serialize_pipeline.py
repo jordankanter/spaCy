@@ -8,14 +8,9 @@ import spacy
 from spacy import Vocab, load, registry
 from spacy.lang.en import English
 from spacy.language import Language
-from spacy.pipeline import (
-    DependencyParser,
-    EntityRecognizer,
-    SentenceRecognizer,
-    Tagger,
-    TextCategorizer,
-    TrainablePipe,
-)
+from spacy.pipeline import DependencyParser, EntityRecognizer
+from spacy.pipeline import SentenceRecognizer, Tagger, TextCategorizer
+from spacy.pipeline import TrainablePipe
 from spacy.pipeline.dep_parser import DEFAULT_PARSER_MODEL
 from spacy.pipeline.senter import DEFAULT_SENTER_MODEL
 from spacy.pipeline.tagger import DEFAULT_TAGGER_MODEL
@@ -92,14 +87,9 @@ def test_issue_3526_1(en_vocab):
     nlp = Language(vocab=en_vocab)
     ruler = nlp.add_pipe("entity_ruler", config={"overwrite_ents": True})
     ruler.add_patterns(patterns)
-    ruler = nlp.add_pipe("entity_ruler", config={"overwrite_ents": True})
-    ruler.add_patterns(patterns)
     ruler_bytes = ruler.to_bytes()
     assert len(ruler) == len(patterns)
     assert len(ruler.labels) == 4
-    new_ruler = nlp.add_pipe(
-        "entity_ruler", name="new_ruler", config={"overwrite_ents": True}
-    )
     new_ruler = nlp.add_pipe(
         "entity_ruler", name="new_ruler", config={"overwrite_ents": True}
     )
@@ -126,7 +116,6 @@ def test_issue_3526_4(en_vocab):
 
 @pytest.mark.issue(4042)
 def test_issue4042():
-    """Test that serialization of an entity_ruler before NER works fine."""
     """Test that serialization of an entity_ruler before NER works fine."""
     nlp = English()
     # add ner pipe
@@ -192,7 +181,7 @@ def test_issue4042_bug2():
 @pytest.mark.issue(4725)
 def test_issue4725_1():
     """Ensure the pickling of the NER goes well"""
-    vocab = Vocab()
+    vocab = Vocab(vectors_name="test_vocab_add_vector")
     nlp = English(vocab=vocab)
     config = {
         "update_with_oracle_cut_size": 111,
