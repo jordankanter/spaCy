@@ -1408,10 +1408,10 @@ doc2 = nlp("Apple is opening its first big office in San Fran.")
 print([(ent.text, ent.label_, ent.id_) for ent in doc2.ents])
 ```
 
-If the `id` attribute is included in the [`EntityRuler`](/api/entityruler)
-patterns, the `id_` property of the matched entity is set to the `id` given
-in the patterns. So in the example above it's easy to identify that "San
-Francisco" and "San Fran" are both the same entity.
+If the `id` attribute is included in the [`entity_ruler`](/api/entityruler)
+patterns, the `id_` property of the matched entity is set to the `id` given in
+the patterns. So in the example above it's easy to identify that "San Francisco"
+and "San Fran" are both the same entity.
 
 ### Using pattern files {id="entityruler-files"}
 
