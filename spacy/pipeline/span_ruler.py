@@ -17,6 +17,14 @@ from typing import (
 
 import srsly
 
+from .pipe import Pipe
+from ..training import Example
+from ..language import Language
+from ..errors import Errors, Warnings
+from ..util import ensure_path, SimpleFrozenList, registry
+from ..tokens import Doc, Span
+from ..scorer import Scorer, get_ner_prf
+from ..matcher import Matcher, PhraseMatcher
 from .. import util
 from ..errors import Errors, Warnings
 from ..language import Language
@@ -33,7 +41,7 @@ DEFAULT_SPANS_KEY = "ruler"
 
 
 @Language.factory(
-    "future_entity_ruler",
+    "entity_ruler",
     assigns=["doc.ents"],
     default_config={
         "phrase_matcher_attr": None,
@@ -77,6 +85,15 @@ def make_entity_ruler(
         overwrite=False,
         scorer=scorer,
     )
+
+
+def entity_ruler_score(examples, **kwargs):
+    return get_ner_prf(examples)
+
+
+@registry.scorers("spacy.entity_ruler_scorer.v1")
+def make_entity_ruler_scorer():
+    return entity_ruler_score
 
 
 @Language.factory(
@@ -136,7 +153,7 @@ def prioritize_new_ents_filter(
 ) -> List[Span]:
     """Merge entities and spans into one list without overlaps by allowing
     spans to overwrite any entities that they overlap with. Intended to
-    replicate the overwrite_ents=True behavior from the EntityRuler.
+    replicate the overwrite_ents=True behavior from the v3 EntityRuler.
 
     entities (Iterable[Span]): The entities, already filtered for overlaps.
     spans (Iterable[Span]): The spans to merge, may contain overlaps.
@@ -167,7 +184,7 @@ def prioritize_existing_ents_filter(
 ) -> List[Span]:
     """Merge entities and spans into one list without overlaps by prioritizing
     existing entities. Intended to replicate the overwrite_ents=False behavior
-    from the EntityRuler.
+    from the v3 EntityRuler.
 
     entities (Iterable[Span]): The entities, already filtered for overlaps.
     spans (Iterable[Span]): The spans to merge, may contain overlaps.
