@@ -19,7 +19,6 @@ class Lexeme:
     def vector_norm(self) -> float: ...
     vector: Floats1d
     rank: int
-    sentiment: float
     @property
     def orth_(self) -> str: ...
     @property
