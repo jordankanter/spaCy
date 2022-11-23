@@ -1389,8 +1389,8 @@ Writing to a `._` attribute instead of to the `Doc` directly keeps a clearer
 separation and makes it easier to ensure backwards compatibility. For example,
 if you've implemented your own `.coref` property and spaCy claims it one day,
 it'll break your code. Similarly, just by looking at the code, you'll
-immediately know what's built-in and what's custom – for example, `doc.lang` is
-spaCy, while `doc._.language` isn't.
+immediately know what's built-in and what's custom – for example,
+`doc.lang` is spaCy, while `doc._.language` isn't.
 
 </Accordion>
 
