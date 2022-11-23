@@ -194,20 +194,6 @@ cdef class Lexeme:
         self.c.id = value
 
     @property
-    def sentiment(self):
-        """RETURNS (float): A scalar value indicating the positivity or
-            negativity of the lexeme."""
-        sentiment_table = self.vocab.lookups.get_table("lexeme_sentiment", {})
-        return sentiment_table.get(self.c.orth, 0.0)
-
-    @sentiment.setter
-    def sentiment(self, float x):
-        if "lexeme_sentiment" not in self.vocab.lookups:
-            self.vocab.lookups.add_table("lexeme_sentiment")
-        sentiment_table = self.vocab.lookups.get_table("lexeme_sentiment")
-        sentiment_table[self.c.orth] = x
-
-    @property
     def orth_(self):
         """RETURNS (str): The original verbatim text of the lexeme
             (identical to `Lexeme.text`). Exists mostly for consistency with
