@@ -7,16 +7,8 @@ import typer
 from wasabi import msg
 
 from .. import about
-from ..errors import OLD_MODEL_SHORTCUTS
-from ..util import (
-    get_minor_version,
-    is_in_interactive,
-    is_in_jupyter,
-    is_package,
-    is_prerelease_version,
-    run_command,
-)
-from ._util import SDIST_SUFFIX, WHEEL_SUFFIX, Arg, Opt, app
+from ..util import is_package, get_minor_version, run_command
+from ..util import is_prerelease_version
 
 
 @app.command(
@@ -76,12 +68,6 @@ def download(
         version = components[-1]
     else:
         model_name = model
-        if model in OLD_MODEL_SHORTCUTS:
-            msg.warn(
-                f"As of spaCy v3.0, shortcuts like '{model}' are deprecated. Please "
-                f"use the full pipeline package name '{OLD_MODEL_SHORTCUTS[model]}' instead."
-            )
-            model_name = OLD_MODEL_SHORTCUTS[model]
         compatibility = get_compatibility()
         version = get_version(model_name, compatibility)
 
