@@ -61,7 +61,7 @@ except ImportError:
 
 from .symbols import ORTH
 from .compat import cupy, CudaStream, is_windows, importlib_metadata
-from .errors import Errors, Warnings, OLD_MODEL_SHORTCUTS
+from .errors import Errors, Warnings
 from . import about
 from .compat import CudaStream, cupy, is_windows
 from .errors import Errors, Warnings
