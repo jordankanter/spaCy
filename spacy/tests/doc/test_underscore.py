@@ -4,6 +4,10 @@ from mock import Mock
 from spacy.tokens import Doc, Span, Token
 from spacy.tokens.underscore import Underscore
 
+# Helper functions
+def _get_tuple(s: Span):
+    return "._.", "span_extension", s.start_char, s.end_char, s.label, s.kb_id, s.id
+
 
 # Helper functions
 def _get_tuple(s: Span):
