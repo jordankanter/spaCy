@@ -18,8 +18,7 @@ from ._state cimport ArcC, StateC
 from .stateclass cimport StateClass
 
 from ...errors import Errors
-
-from thinc.extra.search cimport Beam
+from .search cimport Beam
 
 
 cdef weight_t MIN_SCORE = -90000
