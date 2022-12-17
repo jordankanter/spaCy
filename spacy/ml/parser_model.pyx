@@ -2,7 +2,6 @@
 cimport numpy as np
 from libc.math cimport exp
 from libc.stdlib cimport calloc, free, realloc
-from libc.string cimport memcpy, memset
 from thinc.backends.cblas cimport saxpy, sgemm
 
 import numpy
@@ -101,8 +100,7 @@ cdef void predict_states(CBlas cblas, ActivationsC* A, StateC** states,
     sum_state_features(cblas, A.unmaxed, W.feat_weights, A.token_ids, n.states,
                        n.feats, n.hiddens * n.pieces)
     for i in range(n.states):
-        saxpy(cblas)(n.hiddens * n.pieces, 1., W.feat_bias, 1,
-                     &A.unmaxed[i*n.hiddens*n.pieces], 1)
+        saxpy(cblas)(n.hiddens * n.pieces, 1., W.feat_bias, 1, &A.unmaxed[i*n.hiddens*n.pieces], 1)
         for j in range(n.hiddens):
             index = i * n.hiddens * n.pieces + j * n.pieces
             which = _arg_max(&A.unmaxed[index], n.pieces)

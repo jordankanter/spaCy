@@ -18,7 +18,6 @@ from ._state cimport ArcC, StateC
 from .stateclass cimport StateClass
 
 from ...errors import Errors
-
 from .search cimport Beam
 
 
@@ -328,7 +327,7 @@ cdef class Shift:
     * At least two words in sentence
     * Word has not been shifted before
 
-    Cost: push_cost 
+    Cost: push_cost
 
     Action:
     * Mark B[0] as 'shifted'
@@ -507,8 +506,8 @@ cdef class RightArc:
 
 
 cdef class Break:
-    """Mark the second word of the buffer as the start of a 
-    sentence. 
+    """Mark the second word of the buffer as the start of a
+    sentence.
 
     Validity:
     * len(buffer) >= 2

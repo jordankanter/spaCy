@@ -3,15 +3,14 @@
 cimport numpy as np
 
 import numpy
+from cpython.ref cimport PyObject, Py_XDECREF
 
 from ...typedefs cimport class_t
 from .transition_system cimport Transition, TransitionSystem
 
 from ...errors import Errors
 from .search cimport Beam, MaxViolation
-
 from .search import MaxViolation
-
 from .stateclass cimport StateC, StateClass
 
 

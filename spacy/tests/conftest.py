@@ -4,7 +4,12 @@ import inspect
 import sys
 
 import pytest
+from spacy.util import get_lang_class
+import functools
 from hypothesis import settings
+import inspect
+import importlib
+import sys
 
 from spacy.util import get_lang_class
 
