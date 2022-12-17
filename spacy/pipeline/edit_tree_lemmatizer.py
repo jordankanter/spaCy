@@ -4,8 +4,9 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, 
 
 import numpy as np
 import srsly
-from thinc.api import Config, Model, SequenceCategoricalCrossentropy
+from thinc.api import Config, Model
 from thinc.types import ArrayXd, Floats2d, Ints1d
+from thinc.legacy import LegacySequenceCategoricalCrossentropy
 
 from .. import util
 from ..errors import Errors
@@ -137,7 +138,9 @@ class EditTreeLemmatizer(TrainablePipe):
         self, examples: Iterable[Example], scores: List[Floats2d]
     ) -> Tuple[float, List[Floats2d]]:
         validate_examples(examples, "EditTreeLemmatizer.get_loss")
-        loss_func = SequenceCategoricalCrossentropy(normalize=False, missing_value=-1)
+        loss_func = LegacySequenceCategoricalCrossentropy(
+            normalize=False, missing_value=-1
+        )
 
         truths = []
         for eg in examples:
