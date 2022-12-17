@@ -1,21 +1,17 @@
 # cython: infer_types=True
 import numpy
-
-from thinc.extra.search cimport Beam
-
-from thinc.extra.search import MaxViolation
-
-from thinc.extra.search cimport MaxViolation
+from cpython.ref cimport PyObject, Py_XDECREF
 
 from ...typedefs cimport class_t
 from .transition_system cimport Transition, TransitionSystem
 
 from ...errors import Errors
-
+from .search cimport Beam, MaxViolation
+from .search import MaxViolation
 from .stateclass cimport StateC, StateClass
 
 
-# These are passed as callbacks to thinc.search.Beam
+# These are passed as callbacks to .search.Beam
 cdef int transition_state(void* _dest, void* _src, class_t clas, void* _moves) except -1:
     dest = <StateC*>_dest
     src = <StateC*>_src
