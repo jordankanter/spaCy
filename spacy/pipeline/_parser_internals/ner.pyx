@@ -22,6 +22,8 @@ from ...typedefs cimport attr_t, weight_t
 from ...training import split_bilu_label
 
 from ...training.example cimport Example
+from .search cimport Beam
+from .stateclass cimport StateClass
 from ._state cimport StateC
 from .search cimport Beam
 from .stateclass cimport StateClass
