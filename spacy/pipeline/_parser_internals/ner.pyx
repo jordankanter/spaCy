@@ -8,8 +8,6 @@ from libc.stdint cimport int32_t
 
 from collections import Counter
 
-from thinc.extra.search cimport Beam
-
 from ...tokens.doc cimport Doc
 
 from ...tokens.span import Span
@@ -23,6 +21,8 @@ from ...typedefs cimport attr_t, weight_t
 from ...training import split_bilu_label
 
 from ...training.example cimport Example
+from .search cimport Beam
+from .stateclass cimport StateClass
 from ._state cimport StateC
 from .stateclass cimport StateClass
 from .transition_system cimport Transition, do_func_t
