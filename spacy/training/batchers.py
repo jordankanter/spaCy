@@ -1,16 +1,5 @@
 import itertools
-from functools import partial
-from typing import (
-    Any,
-    Callable,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    TypeVar,
-    Union,
-)
+from thinc.schedules import Schedule, constant as constant_schedule
 
 from thinc.schedules import Schedule
 
@@ -18,8 +7,7 @@ from thinc.schedules import Schedule
 
 from ..util import minibatch, registry
 
-SizingSchedule = Union[Iterable[int], int, Schedule]
-Sizing = Union[Iterable[int], int]
+Sizing = Union[Sequence[int], int, Schedule[int]]
 ItemT = TypeVar("ItemT")
 BatcherT = Callable[[Iterable[ItemT]], Iterable[List[ItemT]]]
 
@@ -124,12 +112,13 @@ def minibatch_by_padded_size(
         The `len` function is used by default.
     """
     if isinstance(size, int):
-        size_: Iterator[int] = itertools.repeat(size)
+        size_ = constant_schedule(size)
     else:
-        size_ = iter(size)
-    for outer_batch in minibatch(seqs, size=buffer):
+        assert isinstance(size, Schedule)
+        size_ = size
+    for step, outer_batch in enumerate(minibatch(seqs, size=buffer)):
         outer_batch = list(outer_batch)
-        target_size = next(size_)
+        target_size = size_(step)
         for indices in _batch_by_length(outer_batch, target_size, get_length):
             subbatch = [outer_batch[i] for i in indices]
             padded_size = max(len(seq) for seq in subbatch) * len(subbatch)
@@ -160,10 +149,12 @@ def minibatch_by_words(
         item. The `len` function is used by default.
     """
     if isinstance(size, int):
-        size_: Iterator[int] = itertools.repeat(size)
+        size_ = constant_schedule(size)
     else:
-        size_ = iter(size)
-    target_size = next(size_)
+        assert isinstance(size, Schedule)
+        size_ = size
+    step = 0
+    target_size = size_(step)
     tol_size = target_size * tolerance
     batch = []
     overflow = []
@@ -188,7 +179,8 @@ def minibatch_by_words(
         else:
             if batch:
                 yield batch
-            target_size = next(size_)
+            step += 1
+            target_size = size_(step)
             tol_size = target_size * tolerance
             batch = overflow
             batch_size = overflow_size
@@ -206,7 +198,8 @@ def minibatch_by_words(
             else:
                 if batch:
                     yield batch
-                target_size = next(size_)
+                step += 1
+                target_size = size_(step)
                 tol_size = target_size * tolerance
                 batch = [seq]
                 batch_size = n_words
