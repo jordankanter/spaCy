@@ -489,7 +489,7 @@ def train_while_improving(
                     score, other_scores = evaluate()
             else:
                 score, other_scores = evaluate()
-            optimizer.last_score = score  # type: ignore[assignment]
+            optimizer.last_score = score
             results.append((score, step))
             is_best_checkpoint = score == max(results)[0]
         else:
