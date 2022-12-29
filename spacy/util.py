@@ -2,7 +2,12 @@ import functools
 import importlib
 import importlib.metadata
 import importlib.util
-import inspect
+import re
+from pathlib import Path
+import thinc
+from thinc.api import NumpyOps, get_current_ops, Adam, Config, Optimizer
+from thinc.api import ConfigValidationError, Model, constant as constant_schedule
+import functools
 import itertools
 import logging
 import os
@@ -1617,12 +1622,12 @@ def minibatch(items, size):
     so that batch-size can vary on each step.
     """
     if isinstance(size, int):
-        size_ = itertools.repeat(size)
+        size_ = constant_schedule(size)
     else:
         size_ = iter(size)
     items = iter(items)
-    while True:
-        batch_size = next(size_)
+    for step in itertools.count():
+        batch_size = size_(step)
         batch = list(itertools.islice(items, int(batch_size)))
         if len(batch) == 0:
             break
