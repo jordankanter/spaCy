@@ -357,6 +357,7 @@ def test_entity_ruler_overlapping_spans(nlp):
     assert doc.ents[0].label_ == "FOOBAR"
 
 
+@pytest.mark.parametrize()
 def test_entity_ruler_fuzzy_pipe(nlp):
     ruler = nlp.add_pipe("entity_ruler")
     patterns = [{"label": "HELLO", "pattern": [{"LOWER": {"FUZZY": "hello"}}]}]
@@ -366,6 +367,7 @@ def test_entity_ruler_fuzzy_pipe(nlp):
     assert doc.ents[0].label_ == "HELLO"
 
 
+@pytest.mark.parametrize()
 def test_entity_ruler_fuzzy(nlp):
     ruler = nlp.add_pipe("entity_ruler")
     patterns = [{"label": "HELLO", "pattern": [{"LOWER": {"FUZZY": "hello"}}]}]
@@ -375,6 +377,7 @@ def test_entity_ruler_fuzzy(nlp):
     assert doc.ents[0].label_ == "HELLO"
 
 
+@pytest.mark.parametrize()
 def test_entity_ruler_fuzzy_disabled(nlp):
     @registry.misc("test_fuzzy_compare_disabled")
     def make_test_fuzzy_compare_disabled():
