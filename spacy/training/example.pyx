@@ -57,12 +57,6 @@ def validate_examples(examples, method):
 
 
 def validate_distillation_examples(examples, method):
-    """Check that a batch of examples received during processing is valid
-    for distillation.
-
-    examples (Iterable[Examples]): A batch of examples.
-    method (str): The method name to show in error messages.
-    """
     validate_examples(examples, method)
     for eg in examples:
         if [token.text for token in eg.reference] != [token.text for token in eg.predicted]:
@@ -278,7 +272,7 @@ cdef class Example:
         heads = numpy.asarray(heads, dtype='i')
         gold_head_i = heads[gold_i]
 
-        # Select all gold tokens that are heads of the previously selected 
+        # Select all gold tokens that are heads of the previously selected
         # gold tokens (and are aligned to a single candidate token).
         g2c_len_heads = gold_to_cand.lengths[gold_head_i]
         g2c_len_heads = numpy.where(g2c_len_heads == 1)[0]
@@ -402,7 +396,7 @@ cdef class Example:
         span_dict = {}
         for key in self.reference.spans:
             span_tuples = []
-            for span in self.reference.spans[key]: 
+            for span in self.reference.spans[key]:
                 span_tuple = (span.start_char, span.end_char, span.label_, span.kb_id_)
                 span_tuples.append(span_tuple)
             span_dict[key] = span_tuples
