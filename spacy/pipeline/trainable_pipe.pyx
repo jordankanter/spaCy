@@ -7,7 +7,7 @@ import warnings
 
 from ..tokens.doc cimport Doc
 
-from ..training import validate_examples
+from ..training import validate_examples, validate_distillation_examples
 from ..errors import Errors, Warnings
 from .pipe import Pipe, deserialize_config
 from .. import util
@@ -59,14 +59,14 @@ cdef class TrainablePipe(Pipe):
         except Exception as e:
             error_handler(self.name, self, [doc], e)
 
+
     def distill(self,
-                teacher_pipe: Optional["TrainablePipe"],
-                examples: Iterable["Example"],
-                *,
-                drop: float = 0.0,
-                sgd: Optional[Optimizer] = None,
-                losses: Optional[Dict[str, float]] = None
-                ) -> Dict[str, float]:
+               teacher_pipe: Optional["TrainablePipe"],
+               examples: Iterable["Example"],
+               *,
+               drop: float=0.0,
+               sgd: Optional[Optimizer]=None,
+               losses: Optional[Dict[str, float]]=None) -> Dict[str, float]:
         """Train a pipe (the student) on the predictions of another pipe
         (the teacher). The student is typically trained on the probability
         distribution of the teacher, but details may differ per pipe.
@@ -74,15 +74,15 @@ cdef class TrainablePipe(Pipe):
         teacher_pipe (Optional[TrainablePipe]): The teacher pipe to learn
             from.
         examples (Iterable[Example]): Distillation examples. The reference
-            (teacher) and predicted (student) docs must have the same number of
-            tokens and the same orthography.
+            and predicted docs must have the same number of tokens and the
+            same orthography.
         drop (float): dropout rate.
         sgd (Optional[Optimizer]): An optimizer. Will be created via
             create_optimizer if not set.
         losses (Optional[Dict[str, float]]): Optional record of loss during
             distillation.
         RETURNS: The updated losses dictionary.
-        
+
         DOCS: https://spacy.io/api/pipe#distill
         """
         # By default we require a teacher pipe, but there are downstream
@@ -227,7 +227,7 @@ cdef class TrainablePipe(Pipe):
         student_scores: Scores representing the student model's predictions.
 
         RETURNS (Tuple[float, float]): The loss and the gradient.
-        
+
         DOCS: https://spacy.io/api/pipe#get_teacher_student_loss
         """
         raise NotImplementedError(Errors.E931.format(parent="TrainablePipe", method="get_teacher_student_loss", name=self.name))

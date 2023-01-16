@@ -1,5 +1,6 @@
 # cython: infer_types=True, profile=True, binding=True
 from typing import Callable, Dict, Iterable, List, Optional, Union
+from typing import Tuple
 import numpy
 import srsly
 from thinc.api import Model, set_dropout_rate, Config
@@ -273,7 +274,6 @@ class Tagger(TrainablePipe):
 
         DOCS: https://spacy.io/api/tagger#rehearse
         """
-        loss_func = LegacySequenceCategoricalCrossentropy()
         if losses is None:
             losses = {}
         losses.setdefault(self.name, 0.0)
@@ -307,7 +307,7 @@ class Tagger(TrainablePipe):
 
         DOCS: https://spacy.io/api/tagger#get_teacher_student_loss
         """
-        loss_func = SequenceCategoricalCrossentropy(normalize=False)
+        loss_func = LegacySequenceCategoricalCrossentropy(normalize=False)
         d_scores, loss = loss_func(student_scores, teacher_scores)
         if self.model.ops.xp.isnan(loss):
             raise ValueError(Errors.E910.format(name=self.name))
