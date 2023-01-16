@@ -1,9 +1,8 @@
 # cython: infer_types=True, cdivision=True, boundscheck=False, binding=True
 # cython: profile=False
 from __future__ import print_function
-
 from typing import Dict, Iterable, List, Optional, Tuple
-
+from cymem.cymem cimport Pool
 cimport numpy as np
 from cymem.cymem cimport Pool
 
@@ -16,7 +15,10 @@ from libcpp.vector cimport vector
 import random
 
 import srsly
-from thinc.api import get_ops, set_dropout_rate, CupyOps, NumpyOps
+from thinc.api import get_ops, set_dropout_rate, CupyOps, NumpyOps, Optimizer
+from thinc.api import chain, softmax_activation, use_ops
+from thinc.legacy import LegacySequenceCategoricalCrossentropy
+from thinc.types import Floats2d
 import numpy.random
 import numpy
 import numpy.random
@@ -47,6 +49,12 @@ from .trainable_pipe import TrainablePipe
 
 from ._parser_internals cimport _beam_utils
 
+from ..training import validate_examples, validate_get_examples
+from ..training import validate_distillation_examples
+from ..errors import Errors, Warnings
+from .. import util
+from ..errors import Errors
+from ..training import validate_examples, validate_get_examples
 from ._parser_internals import _beam_utils
 
 from ..tokens.doc cimport Doc
@@ -244,13 +252,12 @@ cdef class Parser(TrainablePipe):
         raise NotImplementedError
 
     def distill(self,
-                teacher_pipe: Optional[TrainablePipe],
-                examples: Iterable["Example"],
-                *,
-                drop: float = 0.0,
-                sgd: Optional[Optimizer] = None,
-                losses: Optional[Dict[str, float]] = None
-                ):
+               teacher_pipe: Optional[TrainablePipe],
+               examples: Iterable["Example"],
+               *,
+               drop: float=0.0,
+               sgd: Optional[Optimizer]=None,
+               losses: Optional[Dict[str, float]]=None):
         """Train a pipe (the student) on the predictions of another pipe
         (the teacher). The student is trained on the transition probabilities
         of the teacher.
@@ -258,15 +265,15 @@ cdef class Parser(TrainablePipe):
         teacher_pipe (Optional[TrainablePipe]): The teacher pipe to learn
             from.
         examples (Iterable[Example]): Distillation examples. The reference
-            (teacher) and predicted (student) docs must have the same number of
-            tokens and the same orthography.
+            and predicted docs must have the same number of tokens and the
+            same orthography.
         drop (float): dropout rate.
         sgd (Optional[Optimizer]): An optimizer. Will be created via
             create_optimizer if not set.
         losses (Optional[Dict[str, float]]): Optional record of loss during
             distillation.
         RETURNS: The updated losses dictionary.
-        
+
         DOCS: https://spacy.io/api/dependencyparser#distill
         """
         if teacher_pipe is None:
@@ -296,7 +303,7 @@ cdef class Parser(TrainablePipe):
             # batch uniform length. Since we do not have a gold standard
             # sequence, we use the teacher's predictions as the gold
             # standard.
-            max_moves = int(random.uniform(max(max_moves // 2, 1), max_moves * 2))
+            max_moves = int(random.uniform(max_moves // 2, max_moves * 2))
             states = self._init_batch(teacher_step_model, student_docs, max_moves)
         else:
             states = self.moves.init_batch(student_docs)
@@ -349,10 +356,10 @@ cdef class Parser(TrainablePipe):
         student_scores: Scores representing the student model's predictions.
 
         RETURNS (Tuple[float, float]): The loss and the gradient.
-        
+
         DOCS: https://spacy.io/api/dependencyparser#get_teacher_student_loss
         """
-        loss_func = SequenceCategoricalCrossentropy(normalize=False)
+        loss_func = LegacySequenceCategoricalCrossentropy(normalize=False)
         d_scores, loss = loss_func(student_scores, teacher_scores)
         if self.model.ops.xp.isnan(loss):
             raise ValueError(Errors.E910.format(name=self.name))
@@ -782,7 +789,10 @@ cdef class Parser(TrainablePipe):
         long_doc[:N], and another representing long_doc[N:]. In contrast to
         _init_gold_batch, this version uses a teacher model to generate the
         cut sequences."""
-        cdef StateClass state
+        cdef:
+            StateClass start_state
+            StateClass state
+            Transition action
         all_states = self.moves.init_batch(docs)
         states = []
         to_cut = []
