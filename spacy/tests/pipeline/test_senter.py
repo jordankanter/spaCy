@@ -11,6 +11,12 @@ from spacy.tests.util import make_tempdir
 from spacy.training import Example
 
 
+def test_is_distillable():
+    nlp = English()
+    senter = nlp.add_pipe("senter")
+    assert senter.is_distillable
+
+
 def test_label_types():
     nlp = Language()
     senter = nlp.add_pipe("senter")
