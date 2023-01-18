@@ -1,6 +1,5 @@
 # cython: profile=False
 from collections.abc import Iterable as IterableInstance
-
 import numpy
 
 from murmurhash.mrmr cimport hash64
