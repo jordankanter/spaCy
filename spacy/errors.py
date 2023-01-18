@@ -214,6 +214,8 @@ class Warnings(metaclass=ErrorsWithCodes):
             "'spacy init vectors --attr'")
     W126 = ("These keys are unsupported: {unsupported}")
 
+    W400 = ("`use_upper=False` is ignored, the upper layer is always enabled")
+
 
 class Errors(metaclass=ErrorsWithCodes):
     E001 = ("No component '{name}' found in pipeline. Available names: {opts}")
@@ -977,6 +979,7 @@ class Errors(metaclass=ErrorsWithCodes):
     E4002 = ("Pipe '{name}' requires a teacher pipe for distillation.")
     E4003 = ("Training examples for distillation must have the exact same tokens in the "
              "reference and predicted docs.")
+    E4004 = ("Backprop is not supported when is_train is not set.")
 
 
 # fmt: on
