@@ -217,10 +217,7 @@ class Warnings(metaclass=ErrorsWithCodes):
     W126 = ("These keys are unsupported: {unsupported}")
     W127 = ("Not all `Language.pipe` worker processes completed successfully")
 
-    # v4 warning strings
-    W401 = ("`incl_prior is True`, but the selected knowledge base type {kb_type} doesn't support prior probability "
-            "lookups so this setting will be ignored. If your KB does support prior probability lookups, make sure "
-            "to return `True` in `.supports_prior_probs`.")
+    W400 = ("`use_upper=False` is ignored, the upper layer is always enabled")
 
 
 class Errors(metaclass=ErrorsWithCodes):
@@ -987,6 +984,7 @@ class Errors(metaclass=ErrorsWithCodes):
     E4002 = ("Pipe '{name}' requires a teacher pipe for distillation.")
     E4003 = ("Training examples for distillation must have the exact same tokens in the "
              "reference and predicted docs.")
+    E4004 = ("Backprop is not supported when is_train is not set.")
 
 
 # fmt: on
