@@ -393,22 +393,19 @@ cdef class Tokenizer:
         cdef vector[LexemeC*] suffixes
         cdef int orig_size
         orig_size = tokens.length
-        span = self._split_affixes(tokens.mem, span, &prefixes, &suffixes,
+        span = self._split_affixes(span, &prefixes, &suffixes,
                                    has_special, with_special_cases)
         self._attach_tokens(tokens, span, &prefixes, &suffixes, has_special,
                             with_special_cases)
         self._save_cached(&tokens.c[orig_size], orig_key, has_special,
                           tokens.length - orig_size)
 
-    cdef str _split_affixes(
-        self,
-        Pool mem,
-        str string,
-        vector[const LexemeC*] *prefixes,
-        vector[const LexemeC*] *suffixes,
-        int* has_special,
-        bint with_special_cases
-    ):
+    cdef str _split_affixes(self, str string,
+                                vector[const LexemeC*] *prefixes,
+                                vector[const LexemeC*] *suffixes,
+                                int* has_special,
+                                bint with_special_cases):
+        cdef size_t i
         cdef str prefix
         cdef str suffix
         cdef str minus_pre
@@ -426,7 +423,7 @@ cdef class Tokenizer:
                 minus_pre = string[pre_len:]
                 if minus_pre and with_special_cases and self._specials.get(hash_string(minus_pre)) != NULL:
                     string = minus_pre
-                    prefixes.push_back(self.vocab.get(mem, prefix))
+                    prefixes.push_back(self.vocab.get(prefix))
                     break
             suf_len = self.find_suffix(string[pre_len:])
             if suf_len != 0:
@@ -434,18 +431,18 @@ cdef class Tokenizer:
                 minus_suf = string[:-suf_len]
                 if minus_suf and with_special_cases and self._specials.get(hash_string(minus_suf)) != NULL:
                     string = minus_suf
-                    suffixes.push_back(self.vocab.get(mem, suffix))
+                    suffixes.push_back(self.vocab.get(suffix))
                     break
             if pre_len and suf_len and (pre_len + suf_len) <= len(string):
                 string = string[pre_len:-suf_len]
-                prefixes.push_back(self.vocab.get(mem, prefix))
-                suffixes.push_back(self.vocab.get(mem, suffix))
+                prefixes.push_back(self.vocab.get(prefix))
+                suffixes.push_back(self.vocab.get(suffix))
             elif pre_len:
                 string = minus_pre
-                prefixes.push_back(self.vocab.get(mem, prefix))
+                prefixes.push_back(self.vocab.get(prefix))
             elif suf_len:
                 string = minus_suf
-                suffixes.push_back(self.vocab.get(mem, suffix))
+                suffixes.push_back(self.vocab.get(suffix))
         return string
 
     cdef int _attach_tokens(self, Doc tokens, str string,
@@ -470,11 +467,11 @@ cdef class Tokenizer:
                 # We're always saying 'no' to spaces here -- the caller will
                 # fix up the outermost one, with reference to the original.
                 # See Issue #859
-                tokens.push_back(self.vocab.get(tokens.mem, string), False)
+                tokens.push_back(self.vocab.get(string), False)
             else:
                 matches = self.find_infix(string)
                 if not matches:
-                    tokens.push_back(self.vocab.get(tokens.mem, string), False)
+                    tokens.push_back(self.vocab.get(string), False)
                 else:
                     # Let's say we have dyn-o-mite-dave - the regex finds the
                     # start and end positions of the hyphens
@@ -489,7 +486,7 @@ cdef class Tokenizer:
 
                         if infix_start != start:
                             span = string[start:infix_start]
-                            tokens.push_back(self.vocab.get(tokens.mem, span), False)
+                            tokens.push_back(self.vocab.get(span), False)
 
                         if infix_start != infix_end:
                             # If infix_start != infix_end, it means the infix
@@ -497,11 +494,11 @@ cdef class Tokenizer:
                             # for tokenization in some languages (see
                             # https://github.com/explosion/spaCy/issues/768)
                             infix_span = string[infix_start:infix_end]
-                            tokens.push_back(self.vocab.get(tokens.mem, infix_span), False)
+                            tokens.push_back(self.vocab.get(infix_span), False)
                         start = infix_end
                     span = string[start:]
                     if span:
-                        tokens.push_back(self.vocab.get(tokens.mem, span), False)
+                        tokens.push_back(self.vocab.get(span), False)
         cdef vector[const LexemeC*].reverse_iterator it = suffixes.rbegin()
         while it != suffixes.rend():
             lexeme = deref(it)
