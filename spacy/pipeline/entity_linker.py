@@ -477,7 +477,11 @@ class EntityLinker(TrainablePipe):
         docs_ents: List[Ragged] = []
         docs_scores: List[Ragged] = []
         if not docs:
-            return {KNOWLEDGE_BASE_IDS: final_kb_ids, "ents": docs_ents, "scores": docs_scores}
+            return {
+                KNOWLEDGE_BASE_IDS: final_kb_ids,
+                "ents": docs_ents,
+                "scores": docs_scores,
+            }
         if isinstance(docs, Doc):
             docs = [docs]
         for doc in docs:
@@ -584,7 +588,11 @@ class EntityLinker(TrainablePipe):
                 method="predict", msg="result variables not of equal length"
             )
             raise RuntimeError(err)
-        return {KNOWLEDGE_BASE_IDS: final_kb_ids, "ents": docs_ents, "scores": docs_scores}
+        return {
+            KNOWLEDGE_BASE_IDS: final_kb_ids,
+            "ents": docs_ents,
+            "scores": docs_scores,
+        }
 
     def set_annotations(self, docs: Iterable[Doc], activations: ActivationsT) -> None:
     def set_annotations(self, docs: Iterable[Doc], activations: ActivationsT) -> None:
