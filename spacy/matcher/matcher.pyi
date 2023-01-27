@@ -1,17 +1,6 @@
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
-    Union,
-    overload,
-)
-
-from ..compat import Literal
+from typing import Any, List, Dict, Tuple, Optional, Callable, Union, Literal
+from typing import Iterator, Iterable, overload
+from ..vocab import Vocab
 from ..tokens import Doc, Span
 from ..vocab import Vocab
 
