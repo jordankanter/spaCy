@@ -1,7 +1,6 @@
+from typing import Literal
 import warnings
 from typing import Literal
-
-from . import about
 
 
 class ErrorsWithCodes(type):
