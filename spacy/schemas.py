@@ -1,3 +1,12 @@
+from typing import Dict, List, Union, Optional, Any, Callable, Type, Tuple
+from typing import Iterable, TypeVar, Literal, TYPE_CHECKING
+from enum import Enum
+from pydantic import BaseModel, Field, ValidationError, validator, create_model
+from pydantic import StrictStr, StrictInt, StrictFloat, StrictBool, ConstrainedStr
+from pydantic.main import ModelMetaclass
+from thinc.api import Optimizer, ConfigValidationError, Model
+from thinc.config import Promise
+from collections import defaultdict
 import inspect
 import re
 from collections import defaultdict
