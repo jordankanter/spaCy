@@ -1,5 +1,5 @@
 from typing import List, Dict, Callable, Tuple, Optional, Iterable, Any, cast
-from typing import Union
+from typing import Union, Protocol, runtime_checkable
 from thinc.api import Config, Model, get_current_ops, set_dropout_rate, Ops
 from thinc.api import Optimizer
 from thinc.types import Ragged, Ints2d, Floats2d, Ints1d
@@ -8,7 +8,12 @@ import numpy
 from thinc.api import Config, Model, Ops, Optimizer, get_current_ops, set_dropout_rate
 from thinc.types import Floats2d, Ints1d, Ints2d, Ragged
 
-from ..compat import Protocol, runtime_checkable
+from ..scorer import Scorer
+from ..language import Language
+from .trainable_pipe import TrainablePipe
+from ..tokens import Doc, SpanGroup, Span
+from ..vocab import Vocab
+from ..training import Example, validate_examples
 from ..errors import Errors
 from ..language import Language
 from ..scorer import Scorer
