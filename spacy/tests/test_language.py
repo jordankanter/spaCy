@@ -109,6 +109,12 @@ TAGGER_TRAIN_DATA = [
 ]
 
 
+TAGGER_TRAIN_DATA = [
+    ("I like green eggs", {"tags": ["N", "V", "J", "N"]}),
+    ("Eat blue ham", {"tags": ["V", "J", "N"]}),
+]
+
+
 def evil_component(doc):
     if "2" in doc.text:
         raise ValueError("no dice")
