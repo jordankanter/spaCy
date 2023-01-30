@@ -41,7 +41,7 @@ from . import ty
 from .tokens.underscore import Underscore
 from .vocab import Vocab, create_vocab
 from .pipe_analysis import validate_attrs, analyze_pipes, print_pipe_analysis
-from .training import Example, validate_examples
+from .training import Example, validate_examples, validate_distillation_examples
 from .training.initialize import init_vocab, init_tok2vec
 from .scorer import Scorer
 from .util import registry, SimpleFrozenList, _pipe, raise_error, _DEFAULT_EMPTY_PIPES
@@ -1049,7 +1049,7 @@ class Language:
         examples: Iterable[Example],
         *,
         drop: float = 0.0,
-        sgd: Union[Optimizer, None, Literal[False]] = None,
+        sgd: Optional[Optimizer] = None,
         losses: Optional[Dict[str, float]] = None,
         component_cfg: Optional[Dict[str, Dict[str, Any]]] = None,
         exclude: Iterable[str] = SimpleFrozenList(),
@@ -1062,9 +1062,7 @@ class Language:
             (teacher) and predicted (student) docs must have the same number of
             tokens and the same orthography.
         drop (float): The dropout rate.
-        sgd (Union[Optimizer, None, Literal[False]]): An optimizer. Will
-            be created via create_optimizer if 'None'. No optimizer will
-            be used when set to 'False'.
+        sgd (Optional[Optimizer]): An optimizer.
         losses (Optional(Dict[str, float])): Dictionary to update with the loss,
             keyed by component.
         component_cfg (Optional[Dict[str, Dict[str, Any]]]): Config parameters
@@ -1087,7 +1085,7 @@ class Language:
             return losses
 
         validate_distillation_examples(examples, "Language.distill")
-        examples = _copy_examples(examples, copy_x=True, copy_y=True)
+        examples = _copy_examples(examples)
 
         if sgd is None:
             if self._optimizer is None:
@@ -1134,22 +1132,10 @@ class Language:
                 student_proc.distill(
                     teacher_pipe,
                     examples,
-                    sgd=None,
+                    sgd=sgd,
                     losses=losses,
                     **component_cfg[student_name],
                 )
-
-        # Only finish the update after all component updates are done. Some
-        # components may share weights (such as tok2vec) and we only want
-        # to apply weight updates after all gradients are accumulated.
-        for student_name, student_proc in self.pipeline:
-            if (
-                student_name not in exclude
-                and isinstance(student_proc, ty.DistillableComponent)
-                and student_proc.is_distillable
-                and sgd not in (None, False)
-            ):
-                student_proc.finish_update(sgd)
 
         return losses
 
@@ -1919,7 +1905,7 @@ class Language:
         # using the nlp.config with all defaults.
         config = util.copy_config(config)
         orig_pipeline = config.pop("components", {})
-        orig_distill = config.pop("distillation", None)
+        orig_distill = config.pop("distill", None)
         orig_pretraining = config.pop("pretraining", None)
         config["components"] = {}
         if auto_fill:
@@ -1929,8 +1915,8 @@ class Language:
         filled["components"] = orig_pipeline
         config["components"] = orig_pipeline
         if orig_distill is not None:
-            filled["distillation"] = orig_distill
-            config["distillation"] = orig_distill
+            filled["distill"] = orig_distill
+            config["distill"] = orig_distill
         if orig_pretraining is not None:
             filled["pretraining"] = orig_pretraining
             config["pretraining"] = orig_pretraining
