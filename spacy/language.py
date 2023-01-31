@@ -1085,7 +1085,7 @@ class Language:
             return losses
 
         validate_distillation_examples(examples, "Language.distill")
-        examples = _copy_examples(examples)
+        examples = _copy_examples(examples, copy_x=True, copy_y=True)
 
         if sgd is None:
             if self._optimizer is None:
