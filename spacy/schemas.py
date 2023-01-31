@@ -477,6 +477,27 @@ class ConfigSchemaDistill(BaseModel):
         arbitrary_types_allowed = True
 
 
+class ConfigSchemaDistillEmpty(BaseModel):
+    class Config:
+        extra = "forbid"
+
+
+class ConfigSchemaDistill(BaseModel):
+    # fmt: off
+    batcher: Batcher = Field(..., title="Batcher for the training data")
+    corpus: StrictStr = Field(..., title="Path in the config to the distillation data")
+    dropout: StrictFloat = Field(..., title="Dropout rate")
+    max_epochs: StrictInt = Field(..., title="Maximum number of epochs to distill for")
+    max_steps: StrictInt = Field(..., title="Maximum number of steps to distill for")
+    optimizer: Optimizer = Field(..., title="The optimizer to use")
+    student_to_teacher: Dict[str, str] = Field(..., title="Mapping from student to teacher pipe")
+    # fmt: on
+
+    class Config:
+        extra = "forbid"
+        arbitrary_types_allowed = True
+
+
 class ConfigSchema(BaseModel):
     training: ConfigSchemaTraining
     nlp: ConfigSchemaNlp
@@ -484,6 +505,7 @@ class ConfigSchema(BaseModel):
     components: Dict[str, Dict[str, Any]]
     corpora: Dict[str, Reader]
     initialize: ConfigSchemaInit
+    distillation: Union[ConfigSchemaDistill, ConfigSchemaDistillEmpty] = {}  # type: ignore[assignment]
     distillation: Union[ConfigSchemaDistill, ConfigSchemaDistillEmpty] = {}  # type: ignore[assignment]
 
     class Config:
@@ -496,7 +518,7 @@ CONFIG_SCHEMAS = {
     "training": ConfigSchemaTraining,
     "pretraining": ConfigSchemaPretrain,
     "initialize": ConfigSchemaInit,
-    "distillation": ConfigSchemaDistill,
+    "distill": ConfigSchemaDistill,
 }
 
 # Recommendations for init config workflows
