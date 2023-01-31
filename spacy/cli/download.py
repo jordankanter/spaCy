@@ -8,7 +8,8 @@ from wasabi import msg
 
 from .. import about
 from ..util import is_package, get_minor_version, run_command
-from ..util import is_prerelease_version
+from ..util import is_prerelease_version, get_installed_models
+from ..util import get_package_version
 
 
 @app.command(
