@@ -8,17 +8,8 @@ from wasabi import msg
 
 from .. import util
 from ..language import Language
-from ..training.initialize import convert_vectors, init_nlp
-from ._util import (
-    Arg,
-    Opt,
-    _handle_renamed_language_codes,
-    import_code,
-    init_cli,
-    parse_config_overrides,
-    setup_gpu,
-    show_validation_error,
-)
+from ._util import init_cli, Arg, Opt, parse_config_overrides, show_validation_error
+from ._util import import_code, setup_gpu, _handle_renamed_language_codes
 
 
 @init_cli.command("vectors")
