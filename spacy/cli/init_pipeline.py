@@ -8,16 +8,8 @@ from wasabi import msg
 
 from .. import util
 from ..language import Language
-from ..training.initialize import convert_vectors, init_nlp
-from ._util import (
-    Arg,
-    Opt,
-    import_code,
-    init_cli,
-    parse_config_overrides,
-    setup_gpu,
-    show_validation_error,
-)
+from ._util import init_cli, Arg, Opt, parse_config_overrides, show_validation_error
+from ._util import import_code, setup_gpu, _handle_renamed_language_codes
 
 
 @init_cli.command("vectors")
@@ -39,8 +31,11 @@ def init_vectors_cli(
     you can use in the [initialize] block of your config to initialize
     a model with vectors.
     """
-    if verbose:
-        util.logger.setLevel(logging.DEBUG)
+    util.logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+    # Throw error for renamed language codes in v4
+    _handle_renamed_language_codes(lang)
+
     msg.info(f"Creating blank nlp object for language '{lang}'")
     nlp = util.get_lang_class(lang)()
     if jsonl_loc is not None:
