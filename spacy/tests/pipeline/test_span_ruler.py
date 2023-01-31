@@ -46,7 +46,7 @@ def person_org_date_patterns(person_org_patterns):
 
 def test_span_ruler_add_empty(patterns):
     """Test that patterns don't get added excessively."""
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler", config={"validate": True})
     ruler.add_patterns(patterns)
     pattern_count = sum(len(mm) for mm in ruler.matcher._patterns.values())
@@ -57,7 +57,7 @@ def test_span_ruler_add_empty(patterns):
 
 
 def test_span_ruler_init(patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(patterns)
     assert len(ruler) == len(patterns)
@@ -73,7 +73,7 @@ def test_span_ruler_init(patterns):
 
 
 def test_span_ruler_no_patterns_warns():
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     assert len(ruler) == 0
     assert len(ruler.labels) == 0
@@ -85,7 +85,7 @@ def test_span_ruler_no_patterns_warns():
 
 def test_span_ruler_init_patterns(patterns):
     # initialize with patterns
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     assert len(ruler.labels) == 0
     ruler.initialize(lambda: [], patterns=patterns)
@@ -109,7 +109,7 @@ def test_span_ruler_init_patterns(patterns):
 
 def test_span_ruler_init_clear(patterns):
     """Test that initialization clears patterns."""
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(patterns)
     assert len(ruler.labels) == 4
@@ -118,7 +118,7 @@ def test_span_ruler_init_clear(patterns):
 
 
 def test_span_ruler_clear(patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(patterns)
     assert len(ruler.labels) == 4
@@ -132,7 +132,7 @@ def test_span_ruler_clear(patterns):
 
 
 def test_span_ruler_existing(patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler", config={"overwrite": False})
     ruler.add_patterns(patterns)
     doc = nlp.make_doc("OH HELLO WORLD bye bye")
@@ -147,7 +147,7 @@ def test_span_ruler_existing(patterns):
 
 
 def test_span_ruler_existing_overwrite(patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler", config={"overwrite": True})
     ruler.add_patterns(patterns)
     doc = nlp.make_doc("OH HELLO WORLD bye bye")
@@ -160,13 +160,13 @@ def test_span_ruler_existing_overwrite(patterns):
 
 
 def test_span_ruler_serialize_bytes(patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(patterns)
     assert len(ruler) == len(patterns)
     assert len(ruler.labels) == 4
     ruler_bytes = ruler.to_bytes()
-    new_nlp = spacy.blank("xx")
+    new_nlp = spacy.blank("mul")
     new_ruler = new_nlp.add_pipe("span_ruler")
     assert len(new_ruler) == 0
     assert len(new_ruler.labels) == 0
@@ -180,7 +180,7 @@ def test_span_ruler_serialize_bytes(patterns):
 
 
 def test_span_ruler_validate():
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     validated_ruler = nlp.add_pipe(
         "span_ruler", name="validated_span_ruler", config={"validate": True}
@@ -202,14 +202,14 @@ def test_span_ruler_validate():
 
 
 def test_span_ruler_properties(patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler", config={"overwrite": True})
     ruler.add_patterns(patterns)
     assert sorted(ruler.labels) == sorted(set([p["label"] for p in patterns]))
 
 
 def test_span_ruler_overlapping_spans(overlapping_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(overlapping_patterns)
     doc = ruler(nlp.make_doc("foo bar baz"))
@@ -219,7 +219,7 @@ def test_span_ruler_overlapping_spans(overlapping_patterns):
 
 
 def test_span_ruler_scorer(overlapping_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(overlapping_patterns)
     text = "foo bar baz"
@@ -242,7 +242,7 @@ def test_span_ruler_multiprocessing(n_process):
 
         patterns = [{"label": "FASTFOOD", "pattern": "Pizza Hut"}]
 
-        nlp = spacy.blank("xx")
+        nlp = spacy.blank("mul")
         ruler = nlp.add_pipe("span_ruler")
         ruler.add_patterns(patterns)
 
@@ -252,7 +252,7 @@ def test_span_ruler_multiprocessing(n_process):
 
 
 def test_span_ruler_serialize_dir(patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(patterns)
     with make_tempdir() as d:
@@ -263,7 +263,7 @@ def test_span_ruler_serialize_dir(patterns):
 
 
 def test_span_ruler_remove_basic(person_org_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(person_org_patterns)
     doc = ruler(nlp.make_doc("Dina went to school"))
@@ -278,7 +278,7 @@ def test_span_ruler_remove_basic(person_org_patterns):
 
 
 def test_span_ruler_remove_nonexisting_pattern(person_org_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(person_org_patterns)
     assert len(ruler.patterns) == 3
@@ -289,7 +289,7 @@ def test_span_ruler_remove_nonexisting_pattern(person_org_patterns):
 
 
 def test_span_ruler_remove_several_patterns(person_org_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(person_org_patterns)
     doc = ruler(nlp.make_doc("Dina founded the company ACME."))
@@ -313,7 +313,7 @@ def test_span_ruler_remove_several_patterns(person_org_patterns):
 
 
 def test_span_ruler_remove_patterns_in_a_row(person_org_date_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(person_org_date_patterns)
     doc = ruler(nlp.make_doc("Dina founded the company ACME on June 14th"))
@@ -331,7 +331,7 @@ def test_span_ruler_remove_patterns_in_a_row(person_org_date_patterns):
 
 
 def test_span_ruler_remove_all_patterns(person_org_date_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     ruler.add_patterns(person_org_date_patterns)
     assert len(ruler.patterns) == 4
@@ -347,7 +347,7 @@ def test_span_ruler_remove_all_patterns(person_org_date_patterns):
 
 
 def test_span_ruler_remove_and_add():
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler")
     patterns1 = [{"label": "DATE1", "pattern": "last time"}]
     ruler.add_patterns(patterns1)
@@ -403,7 +403,7 @@ def test_span_ruler_remove_and_add():
 
 
 def test_span_ruler_spans_filter(overlapping_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe(
         "span_ruler",
         config={"spans_filter": {"@misc": "spacy.first_longest_spans_filter.v1"}},
@@ -415,7 +415,7 @@ def test_span_ruler_spans_filter(overlapping_patterns):
 
 
 def test_span_ruler_ents_default_filter(overlapping_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe("span_ruler", config={"annotate_ents": True})
     ruler.add_patterns(overlapping_patterns)
     doc = ruler(nlp.make_doc("foo bar baz"))
@@ -424,7 +424,7 @@ def test_span_ruler_ents_default_filter(overlapping_patterns):
 
 
 def test_span_ruler_ents_overwrite_filter(overlapping_patterns):
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe(
         "span_ruler",
         config={
@@ -451,7 +451,7 @@ def test_span_ruler_ents_bad_filter(overlapping_patterns):
 
         return pass_through_filter
 
-    nlp = spacy.blank("xx")
+    nlp = spacy.blank("mul")
     ruler = nlp.add_pipe(
         "span_ruler",
         config={

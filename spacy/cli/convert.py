@@ -8,6 +8,8 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Union
 import srsly
 from wasabi import Printer
 
+from ._util import app, Arg, Opt, _handle_renamed_language_codes, walk_directory
+from ..training import docs_to_json
 from ..tokens import Doc, DocBin
 from ..training import docs_to_json
 from ..training.converters import (
@@ -116,6 +118,10 @@ def convert(
     input_path = Path(input_path)
     if not msg:
         msg = Printer(no_print=silent)
+
+    # Throw error for renamed language codes in v4
+    _handle_renamed_language_codes(lang)
+
     ner_map = srsly.read_json(ner_map) if ner_map is not None else None
     doc_files = []
     for input_loc in walk_directory(input_path, converter):
