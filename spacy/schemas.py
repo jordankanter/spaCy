@@ -518,7 +518,7 @@ CONFIG_SCHEMAS = {
     "training": ConfigSchemaTraining,
     "pretraining": ConfigSchemaPretrain,
     "initialize": ConfigSchemaInit,
-    "distillation": ConfigSchemaDistill,
+    "distill": ConfigSchemaDistill,
 }
 
 # Recommendations for init config workflows
