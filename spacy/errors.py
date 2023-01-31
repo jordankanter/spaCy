@@ -981,6 +981,7 @@ class Errors(metaclass=ErrorsWithCodes):
     # v4 error strings
     E4000 = ("Expected a Doc as input, but got: '{type}'")
 
+RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
 
 # fmt: on
 
