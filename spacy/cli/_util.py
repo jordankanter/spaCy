@@ -37,6 +37,7 @@ from wasabi import Printer, msg
 from ..schemas import ProjectConfigSchema, validate
 from ..util import import_file, run_command, make_tempdir, registry, logger
 from ..util import is_compatible_version, SimpleFrozenDict, ENV_VARS
+from ..errors import RENAMED_LANGUAGE_CODES
 from .. import about
 from ..errors import RENAMED_LANGUAGE_CODES
 from ..schemas import ProjectConfigSchema, validate
