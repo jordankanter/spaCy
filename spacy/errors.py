@@ -1007,6 +1007,7 @@ class Errors(metaclass=ErrorsWithCodes):
              "# or required tables only: tables = {required_tables}\n")
     E4011 = ("Server error ({status_code}), couldn't fetch {url}")
 
+RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
 
 RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
 
