@@ -18,7 +18,7 @@ from spacy.attrs import (
     TAG,
 )
 from spacy.lang.en import English
-from spacy.lang.xx import MultiLanguage
+from spacy.lang.mul import MultiLanguage
 from spacy.language import Language
 from spacy.lexeme import Lexeme
 from spacy.tokens import Doc, Span, SpanGroup, Token
