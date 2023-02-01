@@ -12,7 +12,6 @@ from spacy.kb import Candidate, InMemoryLookupKB, KnowledgeBase
 from spacy.lang.en import English
 from spacy.ml import load_kb
 from spacy.pipeline import EntityLinker, TrainablePipe
-from spacy.pipeline.legacy import EntityLinker_v1
 from spacy.pipeline.tok2vec import DEFAULT_TOK2VEC_MODEL
 from spacy.scorer import Scorer
 from spacy.tests.util import make_tempdir
@@ -1089,6 +1088,8 @@ def test_scorer_links():
 )
 # fmt: on
 def test_legacy_architectures(name, config):
+    from spacy_legacy.components.entity_linker import EntityLinker_v1
+
     # Ensure that the legacy architectures still work
     vector_length = 3
     nlp = English()
