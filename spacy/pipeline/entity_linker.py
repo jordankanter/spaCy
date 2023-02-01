@@ -14,6 +14,16 @@ import srsly
 from thinc.api import Config, CosineDistance, Model, Optimizer, set_dropout_rate
 from thinc.types import Floats2d
 
+from ..kb import KnowledgeBase, Candidate
+from ..ml import empty_kb
+from ..tokens import Doc, Span
+from .pipe import deserialize_config
+from .trainable_pipe import TrainablePipe
+from ..language import Language
+from ..vocab import Vocab
+from ..training import Example, validate_examples, validate_get_examples
+from ..errors import Errors
+from ..util import SimpleFrozenList, registry
 from .. import util
 from ..errors import Errors
 from ..kb import Candidate, KnowledgeBase
@@ -128,6 +138,12 @@ def make_entity_linker(
     """
 
     if not model.attrs.get("include_span_maker", False):
+        try:
+            from spacy_legacy.components.entity_linker import EntityLinker_v1
+        except:
+            raise ImportError(
+                "In order to use v1 of the EntityLinker, you must use spacy-legacy>=3.0.12."
+            )
         # The only difference in arguments here is that use_gold_ents and threshold aren't available.
         return EntityLinker_v1(
             nlp.vocab,
