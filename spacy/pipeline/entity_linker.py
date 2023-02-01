@@ -16,8 +16,18 @@ from numpy import dtype
 from thinc.api import Config, CosineDistance, Model, Optimizer, set_dropout_rate
 from thinc.types import Floats1d, Floats2d, Ints1d, Ragged
 
+from ..kb import KnowledgeBase, Candidate
+from ..ml import empty_kb
+from ..tokens import Doc, Span
+from .pipe import deserialize_config
+from .trainable_pipe import TrainablePipe
+from ..language import Language
+from ..vocab import Vocab
+from ..training import Example, validate_examples, validate_get_examples
+from ..errors import Errors
+from ..util import SimpleFrozenList, registry
 from .. import util
-from ..errors import Errors, Warnings
+from ..errors import Errors
 from ..kb import Candidate, KnowledgeBase
 from ..language import Language
 from ..scorer import Scorer
@@ -129,8 +139,26 @@ def make_entity_linker(
     save_activations (bool): save model activations in Doc when annotating.
     """
     if not model.attrs.get("include_span_maker", False):
-        raise ValueError(Errors.E4005)
-
+        try:
+            from spacy_legacy.components.entity_linker import EntityLinker_v1
+        except:
+            raise ImportError(
+                "In order to use v1 of the EntityLinker, you must use spacy-legacy>=3.0.12."
+            )
+        # The only difference in arguments here is that use_gold_ents and threshold aren't available.
+        return EntityLinker_v1(
+            nlp.vocab,
+            model,
+            name,
+            labels_discard=labels_discard,
+            n_sents=n_sents,
+            incl_prior=incl_prior,
+            incl_context=incl_context,
+            entity_vector_length=entity_vector_length,
+            get_candidates=get_candidates,
+            overwrite=overwrite,
+            scorer=scorer,
+        )
     return EntityLinker(
         nlp.vocab,
         model,
