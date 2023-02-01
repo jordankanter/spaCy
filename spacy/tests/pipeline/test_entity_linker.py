@@ -1089,6 +1089,8 @@ def test_scorer_links():
 )
 # fmt: on
 def test_legacy_architectures(name, config):
+    from spacy_legacy.components.entity_linker import EntityLinker_v1
+
     # Ensure that the legacy architectures still work
     vector_length = 3
     nlp = English()
