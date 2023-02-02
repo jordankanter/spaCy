@@ -29,10 +29,6 @@ from ..training import validate_examples, validate_get_examples
 from ..util import registry
 from .tagger import ActivationsT, Tagger
 
-# See #9050
-BACKWARD_OVERWRITE = True
-BACKWARD_EXTEND = False
-
 default_model_config = """
 [model]
 @architectures = "spacy.Tagger.v2"
