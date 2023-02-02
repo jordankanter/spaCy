@@ -43,9 +43,6 @@ ActivationsT = Dict[str, Union[List[Ragged], List[str]]]
 
 KNOWLEDGE_BASE_IDS = "kb_ids"
 
-# See #9050
-BACKWARD_OVERWRITE = True
-
 default_model_config = """
 [model]
 @architectures = "spacy.EntityLinker.v2"

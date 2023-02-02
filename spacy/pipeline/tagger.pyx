@@ -32,9 +32,6 @@ from .trainable_pipe import TrainablePipe
 
 ActivationsT = Dict[str, Union[List[Floats2d], List[Ints1d]]]
 
-# See #9050
-BACKWARD_OVERWRITE = False
-
 default_model_config = """
 [model]
 @architectures = "spacy.Tagger.v2"
