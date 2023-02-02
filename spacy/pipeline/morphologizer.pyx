@@ -28,10 +28,6 @@ from ..training import validate_examples, validate_get_examples
 from ..util import registry
 from .tagger import Tagger
 
-# See #9050
-BACKWARD_OVERWRITE = True
-BACKWARD_EXTEND = False
-
 default_model_config = """
 [model]
 @architectures = "spacy.Tagger.v2"
@@ -113,9 +109,8 @@ class Morphologizer(Tagger):
         model: Model,
         name: str = "morphologizer",
         *,
-        overwrite: bool = BACKWARD_OVERWRITE,
-        extend: bool = BACKWARD_EXTEND,
-        label_smoothing: float = 0.0,
+        overwrite: bool = False,
+        extend: bool = False,
         scorer: Optional[Callable] = morphologizer_score,
         save_activations: bool = False,
     ):
@@ -125,6 +120,8 @@ class Morphologizer(Tagger):
         model (thinc.api.Model): The Thinc Model powering the pipeline component.
         name (str): The component instance name, used to add entries to the
             losses during training.
+        overwrite (bool): Whether to overwrite existing annotations.
+        extend (bool): Whether to extend existing annotations.
         scorer (Optional[Callable]): The scoring method. Defaults to
             Scorer.score_token_attr for the attributes "pos" and "morph" and
             Scorer.score_token_attr_per_feat for the attribute "morph".

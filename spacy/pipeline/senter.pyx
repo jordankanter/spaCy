@@ -20,8 +20,6 @@ from ..training import validate_examples, validate_get_examples
 from ..util import registry
 from .tagger import Tagger
 
-# See #9050
-BACKWARD_OVERWRITE = False
 
 default_model_config = """
 [model]
@@ -85,7 +83,7 @@ class SentenceRecognizer(Tagger):
         model,
         name="senter",
         *,
-        overwrite=BACKWARD_OVERWRITE,
+        overwrite=False,
         scorer=senter_score,
         save_activations: bool = False,
     ):
@@ -95,6 +93,7 @@ class SentenceRecognizer(Tagger):
         model (thinc.api.Model): The Thinc Model powering the pipeline component.
         name (str): The component instance name, used to add entries to the
             losses during training.
+        overwrite (bool): Whether to overwrite existing annotations.
         scorer (Optional[Callable]): The scoring method. Defaults to
             Scorer.score_spans for the attribute "sents".
         save_activations (bool): save model activations in Doc when annotating.
