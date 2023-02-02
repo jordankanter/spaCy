@@ -18,7 +18,8 @@ from ..language import Language
 from ..scorer import Scorer
 from ..training import validate_examples, validate_get_examples
 from ..util import registry
-from .tagger import ActivationsT, Tagger
+from .tagger import Tagger
+
 
 default_model_config = """
 [model]
