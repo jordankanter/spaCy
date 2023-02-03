@@ -469,7 +469,7 @@ def train_while_improving(
                 subbatch,
                 drop=dropout,
                 losses=losses,
-                sgd=False,
+                sgd=None,
                 exclude=exclude,
                 annotates=annotating_components,
             )
