@@ -12,7 +12,8 @@ from .tokens import Doc, Span
 from .vectors import Vectors
 
 def create_vocab(
-    lang: Optional[str], defaults: Any, vectors_name: Optional[str] = ...
+    lang: Optional[str],
+    defaults: Any,
 ) -> Vocab: ...
 
 class Vocab:
@@ -29,7 +30,6 @@ class Vocab:
         strings: Optional[Union[List[str], StringStore]] = ...,
         lookups: Optional[Lookups] = ...,
         oov_prob: float = ...,
-        vectors_name: Optional[str] = ...,
         writing_system: Dict[str, Any] = ...,
         get_noun_chunks: Optional[Callable[[Union[Doc, Span]], Iterator[Span]]] = ...,
     ) -> None: ...
