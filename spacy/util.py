@@ -1056,22 +1056,11 @@ def make_tempdir() -> Generator[Path, None, None]:
     its contents at the end of the with block.
     YIELDS (Path): The path of the temp directory.
     """
-    d = Path(tempfile.mkdtemp())
-    yield d
-
-    # On Windows, git clones use read-only files, which cause permission errors
-    # when being deleted. This forcibly fixes permissions.
-    def force_remove(rmfunc, path, ex):
-        os.chmod(path, stat.S_IWRITE)
-        rmfunc(path)
-
     try:
-        if sys.version_info >= (3, 12):
-            shutil.rmtree(str(d), onexc=force_remove)
-        else:
-            shutil.rmtree(str(d), onerror=force_remove)
+        with tempfile.TemporaryDirectory() as td:
+            yield Path(td)
     except PermissionError as e:
-        warnings.warn(Warnings.W091.format(dir=d, msg=e))
+        warnings.warn(Warnings.W091.format(dir=td, msg=e))
 
 
 def is_in_jupyter() -> bool:
