@@ -415,9 +415,7 @@ cdef class Token:
         """
         if "has_vector" in self.doc.user_token_hooks:
             return self.doc.user_token_hooks["has_vector"](self)
-        if self.vocab.vectors.size == 0 and self.doc.tensor.size != 0:
-            return True
-        return self.vocab.has_vector(Token.get_struct_attr(self.c, self.vocab.vectors.attr))
+        return self.vocab.has_vector(self.c.lex.orth)
 
     @property
     def vector(self):
@@ -430,8 +428,6 @@ cdef class Token:
         """
         if "vector" in self.doc.user_token_hooks:
             return self.doc.user_token_hooks["vector"](self)
-        if self.vocab.vectors.size == 0 and self.doc.tensor.size != 0:
-            return self.doc.tensor[self.i]
         else:
             return self.vocab.get_vector(Token.get_struct_attr(self.c, self.vocab.vectors.attr))
 
