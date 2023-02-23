@@ -253,8 +253,8 @@ cdef class Doc:
             head in the doc. Defaults to None.
         deps (Optional[List[str]]): A list of unicode strings, of the same
             length as words, to assign as token.dep. Defaults to None.
-        sent_starts (Optional[List[Union[bool, int, None]]]): A list of values, 
-            of the same length as words, to assign as token.is_sent_start. Will 
+        sent_starts (Optional[List[Union[bool, int, None]]]): A list of values,
+            of the same length as words, to assign as token.is_sent_start. Will
             be overridden by heads if heads is provided. Defaults to None.
         ents (Optional[List[str]]): A list of unicode strings, of the same
             length as words, as IOB tags to assign as token.ent_iob and
@@ -691,22 +691,20 @@ cdef class Doc:
 
         DOCS: https://spacy.io/api/doc#vector
         """
-        if "vector" in self.user_hooks:
-            return self.user_hooks["vector"](self)
-        if self._vector is not None:
-            return self._vector
-        xp = get_array_module(self.vocab.vectors.data)
-        if not len(self):
-            self._vector = xp.zeros((self.vocab.vectors_length,), dtype="f")
-            return self._vector
-        elif self.vocab.vectors.size > 0:
-            self._vector = sum(t.vector for t in self) / len(self)
-            return self._vector
-        elif self.tensor.size > 0:
-            self._vector = self.tensor.mean(axis=0)
-            return self._vector
-        else:
-            return xp.zeros((self.vocab.vectors_length,), dtype="float32")
+        def __get__(self):
+            if "vector" in self.user_hooks:
+                return self.user_hooks["vector"](self)
+            if self._vector is not None:
+                return self._vector
+            xp = get_array_module(self.vocab.vectors.data)
+            if not len(self):
+                self._vector = xp.zeros((self.vocab.vectors_length,), dtype="f")
+                return self._vector
+            elif self.vocab.vectors.size > 0:
+                self._vector = sum(t.vector for t in self) / len(self)
+                return self._vector
+            else:
+                return xp.zeros((self.vocab.vectors_length,), dtype="float32")
 
     @vector.setter
     def vector(self, value):
