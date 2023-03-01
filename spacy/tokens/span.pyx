@@ -9,13 +9,12 @@ import numpy
 from thinc.api import get_array_module
 
 from ..attrs cimport *
-from ..attrs cimport attr_id_t
+from ..attrs cimport ORTH, attr_id_t
 from ..lexeme cimport Lexeme
-from ..parts_of_speech cimport univ_pos_t
-from ..structs cimport LexemeC, TokenC
+from ..structs cimport TokenC
 from ..symbols cimport dep
-from ..typedefs cimport attr_t
-from .doc cimport _get_lca_matrix, get_token_attr, token_by_end, token_by_start
+from ..typedefs cimport attr_t, hash_t
+from .doc cimport _get_lca_matrix, get_token_attr
 from .token cimport Token
 
 from ..errors import Errors, Warnings
@@ -241,8 +240,8 @@ cdef class Span:
 
     @property
     def _(self):
-        """Custom extension attributes registered via `set_extension`."""
         cdef SpanC* span_c = self.span_c()
+        """Custom extension attributes registered via `set_extension`."""
         return Underscore(Underscore.span_extensions, self,
                           start=span_c.start_char, end=span_c.end_char, label=self.label, kb_id=self.kb_id, span_id=self.id)
 
@@ -523,13 +522,13 @@ cdef class Span:
                     start = i
                     if start >= self.end:
                         break
-                elif i == self.doc.length - 1:
-                    spans.append(Span(self.doc, start, self.doc.length))
+            if start < self.end:
+                spans.append(Span(self.doc, start, self.end))
+        return tuple(spans)
 
             # Ensure that trailing parts of the Span instance are included in last element of .sents.
             if start == self.doc.length - 1:
-                spans.append(Span(self.doc, start, self.doc.length))
-        return tuple(spans)
+                yield Span(self.doc, start, self.doc.length)
 
     @property
     def ents(self):
@@ -803,61 +802,36 @@ cdef class Span:
             return self.span_c().start
 
         def __set__(self, int start):
-            if start < 0 or start > self.doc.length:
-                raise IndexError(Errors.E1032.format(var="start", obj="Doc", length=self.doc.length, value=start))
-            cdef SpanC* span_c = self.span_c()
-            if start > span_c.end:
-                raise ValueError(Errors.E4007.format(var="start", value=start, op="<=", existing_var="end", existing_value=span_c.end))
-            span_c.start = start
-            span_c.start_char = self.doc.c[start].idx
+            if start < 0:
+                raise IndexError("TODO")
+            self.span_c().start = start
 
     property end:
         def __get__(self):
             return self.span_c().end
 
         def __set__(self, int end):
-            if end < 0 or end > self.doc.length:
-                raise IndexError(Errors.E1032.format(var="end", obj="Doc", length=self.doc.length, value=end))
-            cdef SpanC* span_c = self.span_c()
-            if span_c.start > end:
-                raise ValueError(Errors.E4007.format(var="end", value=end, op=">=", existing_var="start", existing_value=span_c.start))
-            span_c.end = end
-            if end > 0:
-                span_c.end_char = self.doc.c[end-1].idx + self.doc.c[end-1].lex.length
-            else:
-                span_c.end_char = 0
+            if end < 0:
+                raise IndexError("TODO")
+            self.span_c().end = end
 
     property start_char:
         def __get__(self):
             return self.span_c().start_char
 
         def __set__(self, int start_char):
-            if start_char < 0 or start_char > len(self.doc.text):
-                raise IndexError(Errors.E1032.format(var="start_char", obj="Doc text", length=len(self.doc.text), value=start_char))
-            cdef int start = token_by_start(self.doc.c, self.doc.length, start_char)
-            if start < 0:
-                raise ValueError(Errors.E4008.format(value=start_char, pos="start"))
-            cdef SpanC* span_c = self.span_c()
-            if start_char > span_c.end_char:
-                raise ValueError(Errors.E4007.format(var="start_char", value=start_char, op="<=", existing_var="end_char", existing_value=span_c.end_char))
-            span_c.start_char = start_char
-            span_c.start = start
+            if start_char < 0:
+                raise IndexError("TODO")
+            self.span_c().start_char = start_char
 
     property end_char:
         def __get__(self):
             return self.span_c().end_char
 
         def __set__(self, int end_char):
-            if end_char < 0 or end_char > len(self.doc.text):
-                raise IndexError(Errors.E1032.format(var="end_char", obj="Doc text", length=len(self.doc.text), value=end_char))
-            cdef int end = token_by_end(self.doc.c, self.doc.length, end_char)
-            if end < 0:
-                raise ValueError(Errors.E4008.format(value=end_char, pos="end"))
-            cdef SpanC* span_c = self.span_c()
-            if span_c.start_char > end_char:
-                raise ValueError(Errors.E4007.format(var="end_char", value=end_char, op=">=", existing_var="start_char", existing_value=span_c.start_char))
-            span_c.end_char = end_char
-            span_c.end = end
+            if end_char < 0:
+                raise IndexError("TODO")
+            self.span_c().end_char = end_char
 
     property label:
         def __get__(self):
@@ -886,7 +860,6 @@ cdef class Span:
     property id:
         def __get__(self):
             return self.span_c().id
-            return self.span_c().id
 
         def __set__(self, attr_t id):
             if id != self.span_c().id :
@@ -898,13 +871,9 @@ cdef class Span:
 
     property ent_id:
         """Alias for the span's ID."""
-        """Alias for the span's ID."""
         def __get__(self):
             return self.id
-            return self.id
 
-        def __set__(self, attr_t ent_id):
-            self.id = ent_id
         def __set__(self, attr_t ent_id):
             self.id = ent_id
 
@@ -923,7 +892,6 @@ cdef class Span:
 
     property label_:
         """The span's label."""
-        """The span's label."""
         def __get__(self):
             return self.doc.vocab.strings[self.label]
 
@@ -933,7 +901,6 @@ cdef class Span:
 
     property kb_id_:
         """The span's KB ID."""
-        """The span's KB ID."""
         def __get__(self):
             return self.doc.vocab.strings[self.kb_id]
 
@@ -942,7 +909,6 @@ cdef class Span:
         self.kb_id = self.doc.vocab.strings.add(kb_id_)
 
     property id_:
-        """The span's ID."""
         """The span's ID."""
         def __get__(self):
             return self.doc.vocab.strings[self.id]
@@ -966,6 +932,7 @@ cdef class Span:
 
         def __set__(self, str ent_id_):
             self.id_ = ent_id_
+
 
 cdef int _count_words_to_root(const TokenC* token, int sent_length) except -1:
     # Don't allow spaces to be the root, if there are
