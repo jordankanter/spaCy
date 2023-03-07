@@ -1,7 +1,5 @@
-import warnings
 from typing import Literal
-
-from . import about
+import warnings
 
 
 class ErrorsWithCodes(type):
@@ -84,7 +82,7 @@ class Warnings(metaclass=ErrorsWithCodes):
             "ignoring the duplicate entry.")
     W021 = ("Unexpected hash collision in PhraseMatcher. Matches may be "
             "incorrect. Modify PhraseMatcher._terminal_hash to fix.")
-    W024 = ("Entity '{entity}' - alias '{alias}' combination already exists in "
+    W024 = ("Entity '{entity}' - Alias '{alias}' combination already exists in "
             "the Knowledge Base.")
     W026 = ("Unable to set all sentence boundaries from dependency parses. If "
             "you are constructing a parse tree incrementally by setting "
@@ -105,14 +103,13 @@ class Warnings(metaclass=ErrorsWithCodes):
             "table. This may degrade the performance of the model to some "
             "degree. If this is intentional or the language you're using "
             "doesn't have a normalization table, please ignore this warning. "
-            "If this is surprising, make sure you are loading the table in "
-            "your config. The languages with lexeme normalization tables are "
-            "currently: {langs}\n\nAn example of how to load a table in "
-            "your config :\n\n"
+            "If this is surprising, make sure you have the spacy-lookups-data "
+            "package installed and load the table in your config. The "
+            "languages with lexeme normalization tables are currently: "
+            "{langs}\n\nLoad the table in your config with:\n\n"
             "[initialize.lookups]\n"
-            "@misc = \"spacy.LookupsDataLoaderFromURL.v1\"\n"
+            "@misc = \"spacy.LookupsDataLoader.v1\"\n"
             "lang = ${{nlp.lang}}\n"
-             f'url = "{about.__lookups_url__}"\n'
             "tables = [\"lexeme_norm\"]\n")
     W035 = ("Discarding subpattern '{pattern}' due to an unrecognized "
             "attribute or operator.")
@@ -217,10 +214,7 @@ class Warnings(metaclass=ErrorsWithCodes):
     W126 = ("These keys are unsupported: {unsupported}")
     W127 = ("Not all `Language.pipe` worker processes completed successfully")
 
-    # v4 warning strings
-    W401 = ("`incl_prior is True`, but the selected knowledge base type {kb_type} doesn't support prior probability "
-            "lookups so this setting will be ignored. If your KB does support prior probability lookups, make sure "
-            "to return `True` in `.supports_prior_probs`.")
+    W400 = ("`use_upper=False` is ignored, the upper layer is always enabled")
 
 
 class Errors(metaclass=ErrorsWithCodes):
@@ -934,7 +928,7 @@ class Errors(metaclass=ErrorsWithCodes):
     E1029 = ("Edit tree cannot be applied to form.")
     E1030 = ("Edit tree identifier out of range.")
     E1031 = ("Could not find gold transition - see logs above.")
-    E1032 = ("Span {var} {value} is out of bounds for {obj} with length {length}.")
+    E1032 = ("`{var}` should not be {forbidden}, but received {value}.")
     E1033 = ("Dimension {name} invalid -- only nO, nF, nP")
     E1034 = ("Node index {i} out of bounds ({length})")
     E1035 = ("Token index {i} out of bounds ({length})")
@@ -980,6 +974,13 @@ class Errors(metaclass=ErrorsWithCodes):
 
     # v4 error strings
     E4000 = ("Expected a Doc as input, but got: '{type}'")
+    E4001 = ("Expected input to be one of the following types: ({expected_types}), "
+             "but got '{received_type}'")
+    E4002 = ("Pipe '{name}' requires a teacher pipe for distillation.")
+    E4003 = ("Training examples for distillation must have the exact same tokens in the "
+             "reference and predicted docs.")
+    E4004 = ("Backprop is not supported when is_train is not set.")
+    E4005 = ("EntityLinker_v1 is not supported in spaCy v4. Update your configuration.")
 
 RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
 
