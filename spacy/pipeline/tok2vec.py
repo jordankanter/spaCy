@@ -1,3 +1,6 @@
+from typing import Sequence, Iterable, Optional, Dict, Callable, List, Any, Tuple
+from thinc.api import Model, set_dropout_rate, Optimizer, Config
+from thinc.types import Floats2d
 from itertools import islice
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
