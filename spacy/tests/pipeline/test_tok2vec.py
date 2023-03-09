@@ -561,55 +561,84 @@ def test_tok2vec_listeners_textcat():
     assert [t.tag_ for t in docs[1]] == ["N", "V", "J", "N"]
 
 
-def test_tok2vec_listener_source_link_name():
-    """The component's internal name and the tok2vec listener map correspond
-    to the most recently modified pipeline.
+cfg_string_distillation = """
+    [nlp]
+    lang = "en"
+    pipeline = ["tok2vec","tagger"]
+
+    [components]
+
+    [components.tagger]
+    factory = "tagger"
+
+    [components.tagger.model]
+    @architectures = "spacy.Tagger.v2"
+    nO = null
+
+    [components.tagger.model.tok2vec]
+    @architectures = "spacy.Tok2VecListener.v1"
+    width = ${components.tok2vec.model.encode.width}
+
+    [components.tok2vec]
+    factory = "tok2vec"
+
+    [components.tok2vec.model]
+    @architectures = "spacy.Tok2Vec.v2"
+
+    [components.tok2vec.model.embed]
+    @architectures = "spacy.MultiHashEmbed.v2"
+    width = ${components.tok2vec.model.encode.width}
+    rows = [2000, 1000, 1000, 1000]
+    attrs = ["NORM", "PREFIX", "SUFFIX", "SHAPE"]
+    include_static_vectors = false
+
+    [components.tok2vec.model.encode]
+    @architectures = "spacy.MaxoutWindowEncoder.v2"
+    width = 96
+    depth = 4
+    window_size = 1
+    maxout_pieces = 3
     """
-    orig_config = Config().from_str(cfg_string_multi)
-    nlp1 = util.load_model_from_config(orig_config, auto_fill=True, validate=True)
-    assert nlp1.get_pipe("tok2vec").listening_components == ["tagger", "ner"]
-
-    nlp2 = English()
-    nlp2.add_pipe("tok2vec", source=nlp1)
-    nlp2.add_pipe("tagger", name="tagger2", source=nlp1)
-
-    # there is no way to have the component have the right name for both
-    # pipelines, right now the most recently modified pipeline is prioritized
-    assert nlp1.get_pipe("tagger").name == nlp2.get_pipe("tagger2").name == "tagger2"
-
-    # there is no way to have the tok2vec have the right listener map for both
-    # pipelines, right now the most recently modified pipeline is prioritized
-    assert nlp2.get_pipe("tok2vec").listening_components == ["tagger2"]
-    nlp2.add_pipe("ner", name="ner3", source=nlp1)
-    assert nlp2.get_pipe("tok2vec").listening_components == ["tagger2", "ner3"]
-    nlp2.remove_pipe("ner3")
-    assert nlp2.get_pipe("tok2vec").listening_components == ["tagger2"]
-    nlp2.remove_pipe("tagger2")
-    assert nlp2.get_pipe("tok2vec").listening_components == []
-
-    # at this point the tok2vec component corresponds to nlp2
-    assert nlp1.get_pipe("tok2vec").listening_components == []
-
-    # modifying the nlp1 pipeline syncs the tok2vec listener map back to nlp1
-    nlp1.add_pipe("sentencizer")
-    assert nlp1.get_pipe("tok2vec").listening_components == ["tagger", "ner"]
-
-    # modifying nlp2 syncs it back to nlp2
-    nlp2.add_pipe("sentencizer")
-    assert nlp1.get_pipe("tok2vec").listening_components == []
 
 
-def test_tok2vec_listener_source_replace_listeners():
-    orig_config = Config().from_str(cfg_string_multi)
-    nlp1 = util.load_model_from_config(orig_config, auto_fill=True, validate=True)
-    assert nlp1.get_pipe("tok2vec").listening_components == ["tagger", "ner"]
-    nlp1.replace_listeners("tok2vec", "tagger", ["model.tok2vec"])
-    assert nlp1.get_pipe("tok2vec").listening_components == ["ner"]
+def test_tok2vec_distillation_teacher_annotations():
+    orig_config = Config().from_str(cfg_string_distillation)
+    teacher_nlp = util.load_model_from_config(
+        orig_config, auto_fill=True, validate=True
+    )
+    student_nlp = util.load_model_from_config(
+        orig_config, auto_fill=True, validate=True
+    )
 
-    nlp2 = English()
-    nlp2.add_pipe("tok2vec", source=nlp1)
-    assert nlp2.get_pipe("tok2vec").listening_components == []
-    nlp2.add_pipe("tagger", source=nlp1)
-    assert nlp2.get_pipe("tok2vec").listening_components == []
-    nlp2.add_pipe("ner", name="ner2", source=nlp1)
-    assert nlp2.get_pipe("tok2vec").listening_components == ["ner2"]
+    train_examples_teacher = []
+    train_examples_student = []
+    for t in TRAIN_DATA:
+        train_examples_teacher.append(
+            Example.from_dict(teacher_nlp.make_doc(t[0]), t[1])
+        )
+        train_examples_student.append(
+            Example.from_dict(student_nlp.make_doc(t[0]), t[1])
+        )
+
+    optimizer = teacher_nlp.initialize(lambda: train_examples_teacher)
+    student_nlp.initialize(lambda: train_examples_student)
+
+    # Since Language.distill creates a copy of the examples to use as
+    # its internal teacher/student docs, we'll need to monkey-patch the
+    # tok2vec pipe's distill method.
+    student_tok2vec = student_nlp.get_pipe("tok2vec")
+    student_tok2vec._old_distill = student_tok2vec.distill
+
+    def tok2vec_distill_wrapper(
+        self,
+        teacher_pipe,
+        examples,
+        **kwargs,
+    ):
+        assert all(not eg.reference.tensor.any() for eg in examples)
+        out = self._old_distill(teacher_pipe, examples, **kwargs)
+        assert all(eg.reference.tensor.any() for eg in examples)
+        return out
+
+    student_tok2vec.distill = tok2vec_distill_wrapper.__get__(student_tok2vec, Tok2Vec)
+    student_nlp.distill(teacher_nlp, train_examples_student, sgd=optimizer, losses={})
