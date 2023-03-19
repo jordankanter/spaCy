@@ -11,6 +11,7 @@ from spacy.compat import pickle
 from spacy.kb import Candidate, InMemoryLookupKB, KnowledgeBase
 from spacy.lang.en import English
 from spacy.ml import load_kb
+from spacy.ml.models.entity_linker import build_span_maker, get_candidates
 from spacy.pipeline import EntityLinker, TrainablePipe
 from spacy.pipeline.tok2vec import DEFAULT_TOK2VEC_MODEL
 from spacy.scorer import Scorer
