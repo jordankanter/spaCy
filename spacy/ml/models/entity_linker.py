@@ -14,6 +14,12 @@ from thinc.api import (
 )
 from thinc.types import Floats2d
 
+from ...util import registry
+from ...kb import KnowledgeBase, InMemoryLookupKB
+from ...kb import Candidate
+from ...vocab import Vocab
+from ...tokens import Span, Doc
+from ..extract_spans import extract_spans
 from ...errors import Errors
 from ...kb import (
     Candidate,
@@ -132,3 +138,25 @@ def create_candidates_batch() -> Callable[
     [KnowledgeBase, Iterable[Span]], Iterable[Iterable[Candidate]]
 ]:
     return get_candidates_batch
+
+
+def get_candidates(kb: KnowledgeBase, mention: Span) -> Iterable[Candidate]:
+    """
+    Return candidate entities for a given mention and fetching appropriate entries from the index.
+    kb (KnowledgeBase): Knowledge base to query.
+    mention (Span): Entity mention for which to identify candidates.
+    RETURNS (Iterable[Candidate]): Identified candidates.
+    """
+    return kb.get_candidates(mention)
+
+
+def get_candidates_batch(
+    kb: KnowledgeBase, mentions: Iterable[Span]
+) -> Iterable[Iterable[Candidate]]:
+    """
+    Return candidate entities for the given mentions and fetching appropriate entries from the index.
+    kb (KnowledgeBase): Knowledge base to query.
+    mentions (Iterable[Span]): Entity mentions for which to identify candidates.
+    RETURNS (Iterable[Iterable[Candidate]]): Identified candidates.
+    """
+    return kb.get_candidates_batch(mentions)
