@@ -82,7 +82,7 @@ class Warnings(metaclass=ErrorsWithCodes):
             "ignoring the duplicate entry.")
     W021 = ("Unexpected hash collision in PhraseMatcher. Matches may be "
             "incorrect. Modify PhraseMatcher._terminal_hash to fix.")
-    W024 = ("Entity '{entity}' - Alias '{alias}' combination already exists in "
+    W024 = ("Entity '{entity}' - alias '{alias}' combination already exists in "
             "the Knowledge Base.")
     W026 = ("Unable to set all sentence boundaries from dependency parses. If "
             "you are constructing a parse tree incrementally by setting "
@@ -214,7 +214,11 @@ class Warnings(metaclass=ErrorsWithCodes):
     W126 = ("These keys are unsupported: {unsupported}")
     W127 = ("Not all `Language.pipe` worker processes completed successfully")
 
+    # v4 warning strings
     W400 = ("`use_upper=False` is ignored, the upper layer is always enabled")
+    W401 = ("`incl_prior is True`, but the selected knowledge base type {kb_type} doesn't support prior probability "
+            "lookups so this setting will be ignored. If your KB does support prior probability lookups, make sure "
+            "to return `True` in `.supports_prior_probs`.")
 
 
 class Errors(metaclass=ErrorsWithCodes):
@@ -981,6 +985,8 @@ class Errors(metaclass=ErrorsWithCodes):
              "reference and predicted docs.")
     E4004 = ("Backprop is not supported when is_train is not set.")
     E4005 = ("EntityLinker_v1 is not supported in spaCy v4. Update your configuration.")
+    E4006 = ("Expected `entity_id` to be of type {exp_type}, but is of type {found_type}.")
+
 
 RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
 
