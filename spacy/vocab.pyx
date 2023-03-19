@@ -49,9 +49,8 @@ cdef class Vocab:
 
     DOCS: https://spacy.io/api/vocab
     """
-    def __init__(self, lex_attr_getters=None, strings=tuple(), lookups=None,
-                 oov_prob=-20., writing_system={}, get_noun_chunks=None,
-                 **deprecated_kwargs):
+    def __init__(self, lex_attr_getters=None, strings=None, lookups=None,
+            oov_prob=-20., writing_system=None, get_noun_chunks=None):
         """Create the vocabulary.
 
         lex_attr_getters (dict): A dictionary mapping attribute IDs to
