@@ -16,6 +16,8 @@ from thinc.types import Floats2d
 
 from ..kb import KnowledgeBase, Candidate
 from ..tokens import Doc, Span
+from ..ml import empty_kb
+from ..tokens import Doc, Span, SpanGroup
 from .pipe import deserialize_config
 from .trainable_pipe import TrainablePipe
 from ..language import Language
@@ -96,7 +98,7 @@ def make_entity_linker(
     entity_vector_length: int,
     get_candidates: Callable[[KnowledgeBase, Span], Iterable[Candidate]],
     get_candidates_batch: Callable[
-        [KnowledgeBase, Iterable[Span]], Iterable[Iterable[Candidate]]
+        [KnowledgeBase, SpanGroup], Iterable[Iterable[Candidate]]
     ],
     generate_empty_kb: Callable[[Vocab, int], KnowledgeBase],
     overwrite: bool,
@@ -119,7 +121,7 @@ def make_entity_linker(
     get_candidates (Callable[[KnowledgeBase, Span], Iterable[Candidate]]): Function that
         produces a list of candidates, given a certain knowledge base and a textual mention.
     get_candidates_batch (
-        Callable[[KnowledgeBase, Iterable[Span]], Iterable[Iterable[Candidate]]], Iterable[Candidate]]
+        Callable[[KnowledgeBase, SpanGroup], Iterable[Iterable[Candidate]]], Iterable[Candidate]]
         ): Function that produces a list of candidates, given a certain knowledge base and several textual mentions.
     generate_empty_kb (Callable[[Vocab, int], KnowledgeBase]): Callable returning empty KnowledgeBase.
     scorer (Optional[Callable]): The scoring method.
@@ -184,7 +186,7 @@ class EntityLinker(TrainablePipe):
         entity_vector_length: int,
         get_candidates: Callable[[KnowledgeBase, Span], Iterable[Candidate]],
         get_candidates_batch: Callable[
-            [KnowledgeBase, Iterable[Span]], Iterable[Iterable[Candidate]]
+            [KnowledgeBase, SpanGroup], Iterable[Iterable[Candidate]]
         ],
         overwrite: bool = False,
         scorer: Optional[Callable] = entity_linker_score,
@@ -207,7 +209,7 @@ class EntityLinker(TrainablePipe):
         get_candidates (Callable[[KnowledgeBase, Span], Iterable[Candidate]]): Function that
             produces a list of candidates, given a certain knowledge base and a textual mention.
         get_candidates_batch (
-            Callable[[KnowledgeBase, Iterable[Span]], Iterable[Iterable[Candidate]]],
+            Callable[[KnowledgeBase, SpanGroup], Iterable[Iterable[Candidate]]],
             Iterable[Candidate]]
             ): Function that produces a list of candidates, given a certain knowledge base and several textual mentions.
         overwrite (bool): Whether to overwrite existing non-empty annotations.
@@ -487,26 +489,21 @@ class EntityLinker(TrainablePipe):
                 continue
             sentences = [s for s in doc.sents]
 
-                if self.incl_context:
-                    # get n_neighbour sentences, clipped to the length of the document
-                    start_sentence = max(0, sent_index - self.n_sents)
-                    end_sentence = min(len(sentences) - 1, sent_index + self.n_sents)
-                    start_token = sentences[start_sentence].start
-                    end_token = sentences[end_sentence].end
-                    sent_doc = doc[start_token:end_token].as_doc()
-                    # currently, the context is the same for each entity in a sentence (should be refined)
-                    sentence_encoding = self.model.predict([sent_doc])[0]
-                    sentence_encoding_t = sentence_encoding.T
-                    sentence_norm = xp.linalg.norm(sentence_encoding_t)
-                entity_count += 1
-                if ent.label_ in self.labels_discard:
-                    # ignoring this entity - setting to NIL
-                    final_kb_ids.append(self.NIL)
-                    self._add_activations(
-                        doc_scores=doc_scores,
-                        doc_ents=doc_ents,
-                        scores=[0.0],
-                        ents=[0],
+            # Loop over entities in batches.
+            for ent_idx in range(0, len(doc.ents), self.candidates_batch_size):
+                ent_batch = doc.ents[ent_idx : ent_idx + self.candidates_batch_size]
+
+                # Look up candidate entities.
+                valid_ent_idx = [
+                    idx
+                    for idx in range(len(ent_batch))
+                    if ent_batch[idx].label_ not in self.labels_discard
+                ]
+
+                batch_candidates = list(
+                    self.get_candidates_batch(
+                        self.kb,
+                        SpanGroup(doc, spans=[ent_batch[idx] for idx in valid_ent_idx]),
                     )
                 else:
                     candidates = list(self.get_candidates(self.kb, ent))
