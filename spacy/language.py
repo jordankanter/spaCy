@@ -1299,6 +1299,7 @@ class Language:
                 name not in exclude
                 and isinstance(proc, ty.TrainableComponent)
                 and proc.is_trainable
+                and sgd not in (None, False)
             ):
                 proc.finish_update(sgd)
 
