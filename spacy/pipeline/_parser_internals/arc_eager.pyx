@@ -1,4 +1,4 @@
-# cython: cdivision=True, infer_types=True
+# cython: profile=True, cdivision=True, infer_types=True
 from cymem.cymem cimport Address, Pool
 from libc.stdint cimport int32_t
 from libcpp.vector cimport vector
@@ -9,7 +9,7 @@ from ...strings cimport hash_string
 from ...structs cimport TokenC
 from ...tokens.doc cimport Doc, set_children_from_heads
 from ...tokens.token cimport MISSING_DEP
-from ...typedefs cimport attr_t
+from ...typedefs cimport attr_t, hash_t
 
 from ...training import split_bilu_label
 
@@ -18,6 +18,7 @@ from ._state cimport ArcC, StateC
 from .stateclass cimport StateClass
 
 from ...errors import Errors
+
 from .search cimport Beam
 
 

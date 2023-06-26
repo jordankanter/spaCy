@@ -8,7 +8,6 @@ from typing import (
     List,
     Optional,
     Protocol,
-    Sequence,
     Tuple,
     Union,
     overload,
@@ -17,19 +16,14 @@ from typing import (
 import numpy as np
 from cymem.cymem import Pool
 from thinc.types import ArrayXd, Floats1d, Floats2d, Ints2d, Ragged
-from .span import Span
-from .token import Token
-from .span_groups import SpanGroups
-from .retokenizer import Retokenizer
+
 from ..lexeme import Lexeme
 from ..vocab import Vocab
-from ._dict_proxies import SpanGroups
-from ._retokenize import Retokenizer
+from .retokenizer import Retokenizer
 from .span import Span
+from .span_groups import SpanGroups
 from .token import Token
 from .underscore import Underscore
-
-DOCBIN_ALL_ATTRS: Tuple[str, ...]
 
 class DocMethod(Protocol):
     def __call__(self: Doc, *args: Any, **kwargs: Any) -> Any: ...  # type: ignore[misc]

@@ -1,10 +1,3 @@
-from typing import Dict, Any, Union, List, Optional, Tuple, Iterable, Literal
-from typing import TYPE_CHECKING, overload
-import sys
-import shutil
-from pathlib import Path
-from wasabi import msg, Printer
-import srsly
 import hashlib
 import os
 import shutil
@@ -18,6 +11,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Optional,
     Tuple,
     Union,
@@ -32,15 +26,10 @@ from thinc.api import Config, ConfigValidationError, require_gpu
 from thinc.util import gpu_is_available
 from typer.main import get_command
 from wasabi import Printer, msg
-from weasel import app as project_cli
 
-from ..schemas import ProjectConfigSchema, validate
-from ..util import import_file, run_command, make_tempdir, registry, logger
-from ..util import is_compatible_version, SimpleFrozenDict, ENV_VARS
-from ..errors import RENAMED_LANGUAGE_CODES
 from .. import about
-from ..compat import Literal
-from ..schemas import validate
+from ..errors import RENAMED_LANGUAGE_CODES
+from ..schemas import ProjectConfigSchema, validate
 from ..util import (
     ENV_VARS,
     SimpleFrozenDict,
@@ -51,6 +40,10 @@ from ..util import (
     registry,
     run_command,
 )
+
+if TYPE_CHECKING:
+    from pathy import FluidPath  # noqa: F401
+
 
 SDIST_SUFFIX = ".tar.gz"
 WHEEL_SUFFIX = "-py3-none-any.whl"
