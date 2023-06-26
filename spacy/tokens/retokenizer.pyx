@@ -1,6 +1,7 @@
-# cython: infer_types=True, bounds_check=False
+# cython: infer_types=True, bounds_check=False, profile=True
 from cymem.cymem cimport Pool
-from libc.string cimport memset
+from libc.stdlib cimport free, malloc
+from libc.string cimport memcpy, memset
 
 import numpy
 from thinc.api import get_array_module
@@ -9,12 +10,15 @@ from ..attrs cimport MORPH, NORM
 from ..lexeme cimport EMPTY_LEXEME, Lexeme
 from ..structs cimport LexemeC, TokenC
 from ..vocab cimport Vocab
-from .doc cimport Doc, set_children_from_heads, token_by_start
+from .doc cimport Doc, set_children_from_heads, token_by_end, token_by_start
 from .span cimport Span
 from .token cimport Token
 
 from ..attrs import intify_attrs
 from ..errors import Errors
+from ..util import SimpleFrozenDict
+from .underscore import is_writable_attr
+
 from ..strings cimport get_string_id
 
 

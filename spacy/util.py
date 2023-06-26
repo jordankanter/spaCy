@@ -2,13 +2,7 @@ import functools
 import importlib
 import importlib.metadata
 import importlib.util
-import re
-from pathlib import Path
-import thinc
-from thinc.api import NumpyOps, get_current_ops, Adam, Config, Optimizer
-from thinc.api import ConfigValidationError, Model, constant as constant_schedule
-from thinc.api import fix_random_seed, set_gpu_allocator
-import functools
+import inspect
 import itertools
 import logging
 import os
@@ -55,15 +49,9 @@ from catalogue import Registry, RegistryError
 from packaging.requirements import Requirement
 from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.version import InvalidVersion, Version
-from thinc.api import (
-    Adam,
-    Config,
-    ConfigValidationError,
-    Model,
-    NumpyOps,
-    Optimizer,
-    get_current_ops,
-)
+from thinc.api import Adam, Config, ConfigValidationError, Model, NumpyOps, Optimizer
+from thinc.api import constant as constant_schedule
+from thinc.api import fix_random_seed, get_current_ops, set_gpu_allocator
 
 try:
     import cupy.random
@@ -71,12 +59,9 @@ except ImportError:
     cupy = None
 
 
-from .symbols import ORTH
-from .compat import cupy, CudaStream, is_windows
-from .errors import Errors, Warnings
 from . import about
-from .compat import CudaStream, cupy, importlib_metadata, is_windows
-from .errors import OLD_MODEL_SHORTCUTS, Errors, Warnings
+from .compat import CudaStream, cupy, is_windows
+from .errors import Errors, Warnings
 from .symbols import ORTH
 
 if TYPE_CHECKING:

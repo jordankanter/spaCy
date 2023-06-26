@@ -1,5 +1,7 @@
 import functools
 
+import functools
+
 import numpy
 import srsly
 from thinc.api import get_array_module, get_current_ops
@@ -16,6 +18,7 @@ from .errors import Errors
 from .lang.lex_attrs import LEX_ATTRS, get_lang, is_stop
 from .lang.norm_exceptions import BASE_NORMS
 from .lookups import Lookups
+from .util import registry
 from .vectors import Mode as VectorsMode
 from .vectors import Vectors
 

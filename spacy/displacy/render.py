@@ -1,3 +1,4 @@
+import itertools
 import uuid
 from typing import Any, Dict, List, Optional, Tuple, Union
 

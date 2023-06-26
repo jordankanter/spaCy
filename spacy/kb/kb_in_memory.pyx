@@ -1,5 +1,5 @@
-# cython: infer_types=True
-from typing import Any, Callable, Dict, Iterable
+# cython: infer_types=True, profile=True
+from typing import Any, Callable, Dict, Iterable, Union
 
 import srsly
 
@@ -22,6 +22,7 @@ from ..util import SimpleFrozenList, ensure_path
 
 from ..vocab cimport Vocab
 from .kb cimport KnowledgeBase
+
 from .candidate import InMemoryCandidate
 
 

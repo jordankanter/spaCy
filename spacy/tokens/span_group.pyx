@@ -1,16 +1,15 @@
-# cython: profile=False
 import struct
 import weakref
 from copy import deepcopy
-from typing import Iterable, Optional, Union
+from typing import TYPE_CHECKING, Iterable, Optional, Tuple, Union
 
 import srsly
 
 from spacy.errors import Errors
 
-from .span cimport Span
-from libc.stdint cimport uint64_t, uint32_t, int32_t
 from libcpp.memory cimport make_shared
+
+from .span cimport Span
 
 
 cdef class SpanGroup:

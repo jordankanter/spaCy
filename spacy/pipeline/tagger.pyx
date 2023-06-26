@@ -1,28 +1,28 @@
 # cython: infer_types=True, profile=True, binding=True
-from typing import Callable, Dict, Iterable, List, Optional, Union
-from typing import Tuple
-import numpy
-import srsly
-from thinc.api import Model, set_dropout_rate, Config
-from thinc.legacy import LegacySequenceCategoricalCrossentropy
-from thinc.types import Floats2d, Ints1d
 import warnings
 from itertools import islice
-from typing import Callable, Optional
+from typing import Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy
-from thinc.api import Config, Model, SequenceCategoricalCrossentropy, set_dropout_rate
+import srsly
+from thinc.api import Config, Model, set_dropout_rate
+from thinc.legacy import LegacySequenceCategoricalCrossentropy
+from thinc.types import Floats2d, Ints1d
 
+from ..morphology cimport Morphology
 from ..tokens.doc cimport Doc
+from ..vocab cimport Vocab
 
 from .. import util
-from ..errors import Errors
+from ..attrs import ID, POS
+from ..errors import Errors, Warnings
 from ..language import Language
+from ..parts_of_speech import X
 from ..scorer import Scorer
 from ..training import validate_examples, validate_get_examples
 from ..util import registry
+from .pipe import deserialize_config
 from .trainable_pipe import TrainablePipe
-
 
 ActivationsT = Dict[str, Union[List[Floats2d], List[Ints1d]]]
 

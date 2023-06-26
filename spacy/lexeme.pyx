@@ -2,6 +2,7 @@
 # cython: profile=False
 # Compiler crashes on memory view coercion without this. Should report bug.
 cimport numpy as np
+from cython.view cimport array as cvarray
 from libc.string cimport memset
 
 np.import_array()
@@ -35,7 +36,7 @@ from .typedefs cimport attr_t, flags_t
 from .attrs import intify_attrs
 from .errors import Errors, Warnings
 
-OOV_RANK = 0xffffffffffffffff  # UINT64_MAX
+OOV_RANK = 0xffffffffffffffff # UINT64_MAX
 memset(&EMPTY_LEXEME, 0, sizeof(LexemeC))
 EMPTY_LEXEME.id = OOV_RANK
 

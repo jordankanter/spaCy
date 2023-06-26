@@ -1,25 +1,16 @@
 # cython: infer_types=True, binding=True
 from collections import defaultdict
-from typing import Callable, Optional
+from typing import Callable, Iterable, Optional
 
 from thinc.api import Config, Model
 
+from ..language import Language
+from ..scorer import PRFScore, get_ner_prf
+from ..training import remove_bilu_prefix, validate_examples
+from ..util import registry
+from ._parser_internals.ner import BiluoPushDown
 from ._parser_internals.transition_system import TransitionSystem
 from .transition_parser import Parser
-from ._parser_internals.ner import BiluoPushDown
-from ..language import Language
-from ..scorer import get_ner_prf, PRFScore
-from ..training import validate_examples
-from ..util import registry
-from ..training import remove_bilu_prefix
-
-from ._parser_internals.ner cimport BiluoPushDown
-from .transition_parser cimport Parser
-
-from ..language import Language
-from ..scorer import get_ner_prf
-from ..training import remove_bilu_prefix
-from ..util import registry
 
 default_model_config = """
 [model]

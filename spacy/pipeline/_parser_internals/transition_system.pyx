@@ -11,9 +11,11 @@ from collections import Counter
 import srsly
 
 from ...structs cimport TokenC
+from ...tokens.doc cimport Doc
 from ...typedefs cimport attr_t, weight_t
-from .stateclass cimport StateClass
+from . cimport _beam_utils
 from ._parser_utils cimport arg_max_if_valid
+from .stateclass cimport StateClass
 
 from ... import util
 from ...errors import Errors

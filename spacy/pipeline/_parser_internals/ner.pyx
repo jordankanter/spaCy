@@ -1,10 +1,10 @@
 import os
 import random
+
+from cymem.cymem cimport Pool
 from libc.stdint cimport int32_t
 from libcpp.memory cimport shared_ptr
 from libcpp.vector cimport vector
-from cymem.cymem cimport Pool
-from libc.stdint cimport int32_t
 
 from collections import Counter
 
@@ -14,16 +14,15 @@ from ...tokens.span import Span
 
 from ...attrs cimport IS_SPACE
 from ...lexeme cimport Lexeme
-from ...structs cimport SpanC
+from ...structs cimport SpanC, TokenC
 from ...tokens.span cimport Span
 from ...typedefs cimport attr_t, weight_t
 
 from ...training import split_bilu_label
 
 from ...training.example cimport Example
-from .search cimport Beam
-from .stateclass cimport StateClass
 from ._state cimport StateC
+from .search cimport Beam
 from .stateclass cimport StateClass
 from .transition_system cimport Transition, do_func_t
 

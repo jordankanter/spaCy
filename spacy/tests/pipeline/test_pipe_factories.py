@@ -1,4 +1,6 @@
 import pytest
+from pydantic import StrictInt, StrictStr
+from thinc.api import ConfigValidationError, Linear, Model
 
 try:
     from pydantic.v1 import StrictInt, StrictStr
