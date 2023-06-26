@@ -1,10 +1,8 @@
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import Callable, Optional
 
 from ..errors import Errors
+from ..language import Language
 from ..util import load_model, logger, registry
-
-if TYPE_CHECKING:
-    from ..language import Language
 
 
 @registry.callbacks("spacy.copy_from_base_model.v1")
