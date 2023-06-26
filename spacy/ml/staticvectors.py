@@ -1,4 +1,3 @@
-import warnings
 from typing import Callable, List, Optional, Sequence, Tuple, cast
 
 from thinc.api import Model, Ops, registry
@@ -6,10 +5,9 @@ from thinc.initializers import glorot_uniform_init
 from thinc.types import Floats1d, Floats2d, Ints1d, Ragged
 from thinc.util import partial
 
-from ..attrs import ORTH
-from ..errors import Errors, Warnings
+from ..errors import Errors
 from ..tokens import Doc
-from ..vectors import Mode, Vectors
+from ..vectors import Mode
 from ..vocab import Vocab
 
 

@@ -1,4 +1,4 @@
-# cython: infer_types=True, binding=True
+# cython: infer_types=True, profile=True, binding=True
 from typing import Callable, List, Optional
 
 import srsly
@@ -7,8 +7,10 @@ from ..tokens.doc cimport Doc
 
 from .. import util
 from ..language import Language
+from ..scorer import Scorer
 from .pipe import Pipe
 from .senter import senter_score
+
 
 @Language.factory(
     "sentencizer",

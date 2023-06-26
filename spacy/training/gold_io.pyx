@@ -1,4 +1,4 @@
-# cython: profile=False
+import json
 import warnings
 
 import srsly
@@ -6,7 +6,7 @@ import srsly
 from .. import util
 from ..errors import Warnings
 from ..tokens import Doc
-from .iob_utils import offsets_to_biluo_tags
+from .iob_utils import offsets_to_biluo_tags, tags_to_entities
 
 
 def docs_to_json(docs, doc_id=0, ner_missing_tag="O"):

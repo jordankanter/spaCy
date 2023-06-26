@@ -1,5 +1,6 @@
 # cython: infer_types=True
-# cython: profile=False
+import numpy
+
 from libcpp.vector cimport vector
 
 from ...tokens.doc cimport Doc

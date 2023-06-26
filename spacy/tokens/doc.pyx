@@ -20,15 +20,8 @@ from thinc.util import copy_array
 
 from .span cimport Span
 from .token cimport MISSING_DEP
-from .span_groups import SpanGroups
-from .token cimport Token
-from ..lexeme cimport Lexeme, EMPTY_LEXEME
-from ..typedefs cimport attr_t, flags_t
-from ..attrs cimport attr_id_t
-from ..attrs cimport LENGTH, POS, LEMMA, TAG, MORPH, DEP, HEAD, SPACY, ENT_IOB
-from ..attrs cimport ENT_TYPE, ENT_ID, ENT_KB_ID, SENT_START, IDX, NORM
 
-from ._dict_proxies import SpanGroups
+from .span_groups import SpanGroups
 
 from ..attrs cimport (
     DEP,
@@ -42,7 +35,6 @@ from ..attrs cimport (
     LENGTH,
     MORPH,
     NORM,
-    ORTH,
     POS,
     SENT_START,
     SPACY,
@@ -50,22 +42,17 @@ from ..attrs cimport (
     attr_id_t,
 )
 from ..lexeme cimport EMPTY_LEXEME, Lexeme
-from ..typedefs cimport attr_t
+from ..typedefs cimport attr_t, flags_t
 from .token cimport Token
 
 from .. import parts_of_speech, schemas, util
 from ..attrs import IDS, intify_attr
-from ..compat import copy_reg
+from ..compat import copy_reg, pickle
 from ..errors import Errors, Warnings
 from ..morphology import Morphology
-from .. import util
-from .. import parts_of_speech
-from .. import schemas
-from .underscore import Underscore, get_ext_args
-from .retokenizer import Retokenizer
-from .doc_bin import ALL_ATTRS as DOCBIN_ALL_ATTRS
 from ..util import get_words_and_spaces
-from ._retokenize import Retokenizer
+from .doc_bin import ALL_ATTRS as DOCBIN_ALL_ATTRS
+from .retokenizer import Retokenizer
 from .underscore import Underscore, get_ext_args
 
 DEF PADDING = 5
