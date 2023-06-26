@@ -1,3 +1,4 @@
+import importlib.metadata
 import json
 import platform
 from pathlib import Path
@@ -7,7 +8,6 @@ import srsly
 from wasabi import MarkdownRenderer, Printer
 
 from .. import about, util
-from ..compat import importlib_metadata
 from ._util import Arg, Opt, app, string_to_list
 from .download import get_latest_version, get_model_filename
 

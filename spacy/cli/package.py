@@ -1,7 +1,5 @@
-import os
 import re
 import shutil
-import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -13,7 +11,6 @@ from thinc.api import Config
 from wasabi import MarkdownRenderer, Printer, get_raw_input
 
 from .. import about, util
-from ..compat import importlib_metadata
 from ..schemas import ModelMetaSchema, validate
 from ._util import SDIST_SUFFIX, WHEEL_SUFFIX, Arg, Opt, app, string_to_list
 

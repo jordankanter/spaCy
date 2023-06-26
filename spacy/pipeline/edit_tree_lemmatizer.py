@@ -1,12 +1,12 @@
 from collections import Counter
 from itertools import islice
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, cast
 
 import numpy as np
 import srsly
-from thinc.api import Config, Model
-from thinc.types import ArrayXd, Floats2d, Ints1d
+from thinc.api import Config, Model, NumpyOps, SequenceCategoricalCrossentropy
 from thinc.legacy import LegacySequenceCategoricalCrossentropy
+from thinc.types import ArrayXd, Floats2d, Ints1d
 
 from .. import util
 from ..errors import Errors
@@ -18,10 +18,6 @@ from ._edit_tree_internals.edit_trees import EditTrees
 from ._edit_tree_internals.schemas import validate_edit_tree
 from .lemmatizer import lemmatizer_score
 from .trainable_pipe import TrainablePipe
-
-# The cutoff value of *top_k* above which an alternative method is used to process guesses.
-TOP_K_GUARDRAIL = 20
-
 
 ActivationsT = Dict[str, Union[List[Floats2d], List[Ints1d]]]
 

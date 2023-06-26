@@ -1,19 +1,31 @@
 import math
 import os
+import time
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+import numpy
 import pytest
 import srsly
 from click import NoSuchOption
 from packaging.specifiers import SpecifierSet
-from thinc.api import Config
+from thinc.api import Config, ConfigValidationError
 
 import spacy
 from spacy import about
 from spacy.cli import info
-from spacy.cli._util import parse_config_overrides, string_to_list, walk_directory
+from spacy.cli._util import (
+    download_file,
+    is_subpath_of,
+    load_project_config,
+    parse_config_overrides,
+    string_to_list,
+    substitute_project_variables,
+    upload_file,
+    validate_project_commands,
+    walk_directory,
+)
 from spacy.cli.apply import apply
 from spacy.cli.debug_data import (
     _compile_gold,
@@ -31,6 +43,8 @@ from spacy.cli.find_threshold import find_threshold
 from spacy.cli.init_config import RECOMMENDATIONS, fill_config, init_config
 from spacy.cli.init_pipeline import _init_labels
 from spacy.cli.package import _is_permitted_package_name, get_third_party_dependencies
+from spacy.cli.project.remote_storage import RemoteStorage
+from spacy.cli.project.run import _check_requirements
 from spacy.cli.validate import get_model_pkgs
 from spacy.lang.en import English
 from spacy.lang.nl import Dutch

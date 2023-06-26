@@ -1,11 +1,3 @@
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
-from typing import Literal, cast, overload
-from pathlib import Path
-from collections import Counter
-import sys
-import srsly
-from wasabi import Printer, MESSAGES, msg
-import typer
 import math
 import sys
 from collections import Counter
@@ -15,6 +7,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Optional,
     Sequence,
     Set,
@@ -30,7 +23,6 @@ import typer
 from wasabi import MESSAGES, Printer, msg
 
 from .. import util
-from ..compat import Literal
 from ..language import Language
 from ..morphology import Morphology
 from ..pipeline import Morphologizer, SpanCategorizer, TrainablePipe

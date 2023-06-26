@@ -14,21 +14,9 @@ from thinc.api import (
 )
 from thinc.types import Floats2d
 
-from ...util import registry
-from ...kb import KnowledgeBase, InMemoryLookupKB
-from ...kb import Candidate
-from ...vocab import Vocab
-from ...tokens import Doc, Span, SpanGroup
-from ..extract_spans import extract_spans
 from ...errors import Errors
-from ...kb import (
-    Candidate,
-    InMemoryLookupKB,
-    KnowledgeBase,
-    get_candidates,
-    get_candidates_batch,
-)
-from ...tokens import Doc, Span
+from ...kb import Candidate, InMemoryLookupKB, KnowledgeBase
+from ...tokens import Doc, Span, SpanGroup
 from ...util import registry
 from ...vocab import Vocab
 from ..extract_spans import extract_spans

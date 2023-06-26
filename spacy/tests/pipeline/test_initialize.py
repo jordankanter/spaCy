@@ -1,10 +1,5 @@
 import pytest
-
-try:
-    from pydantic.v1 import StrictBool
-except ImportError:
-    from pydantic import StrictBool  # type: ignore
-
+from pydantic import StrictBool
 from thinc.api import ConfigValidationError
 
 from spacy.lang.en import English

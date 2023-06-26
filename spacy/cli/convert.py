@@ -8,8 +8,6 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Union
 import srsly
 from wasabi import Printer
 
-from ._util import app, Arg, Opt, _handle_renamed_language_codes, walk_directory
-from ..training import docs_to_json
 from ..tokens import Doc, DocBin
 from ..training import docs_to_json
 from ..training.converters import (
@@ -18,7 +16,7 @@ from ..training.converters import (
     iob_to_docs,
     json_to_docs,
 )
-from ._util import Arg, Opt, app, walk_directory
+from ._util import Arg, Opt, _handle_renamed_language_codes, app, walk_directory
 
 # Converters are matched by file extension except for ner/iob, which are
 # matched by file extension and content. To add a converter, add a new

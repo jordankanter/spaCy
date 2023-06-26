@@ -1,19 +1,16 @@
-# cython: infer_types=True, binding=True
+# cython: infer_types=True, profile=True, binding=True
+import warnings
 from typing import Callable, Dict, Iterable, Iterator, Optional, Tuple
 
 import srsly
-from thinc.api import set_dropout_rate, Model, Optimizer
-import warnings
+from thinc.api import Model, Optimizer, set_dropout_rate
 
 from ..tokens.doc cimport Doc
 
-from ..training import validate_examples, validate_distillation_examples
-from ..errors import Errors, Warnings
-from .pipe import Pipe, deserialize_config
 from .. import util
-from ..errors import Errors
+from ..errors import Errors, Warnings
 from ..language import Language
-from ..training import Example, validate_examples
+from ..training import Example, validate_distillation_examples, validate_examples
 from ..vocab import Vocab
 from .pipe import Pipe, deserialize_config
 

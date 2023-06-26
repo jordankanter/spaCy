@@ -1,15 +1,13 @@
-# cython: infer_types=True, binding=True
-from typing import Callable
-
+cimport numpy as np
 from cython.operator cimport dereference as deref
 from libc.stdint cimport uint32_t, uint64_t
 from libcpp.set cimport set as cppset
 from murmurhash.mrmr cimport hash128_x64
 
+import functools
 import warnings
 from enum import Enum
-from pathlib import Path
-from typing import TYPE_CHECKING, Union, cast
+from typing import cast
 
 import numpy
 import srsly
@@ -21,12 +19,8 @@ from .attrs cimport ORTH, attr_id_t
 from .strings cimport StringStore
 
 from . import util
-from .attrs import IDS
 from .errors import Errors, Warnings
 from .strings import get_string_id
-
-if TYPE_CHECKING:
-    from .vocab import Vocab  # noqa: F401  # no-cython-lint
 
 
 def unpickle_vectors(bytes_data):

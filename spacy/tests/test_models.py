@@ -26,7 +26,6 @@ from spacy.ml.models import (
     build_Tok2Vec_model,
 )
 from spacy.ml.staticvectors import StaticVectors
-from spacy.util import registry
 
 
 def get_textcat_bow_kwargs():

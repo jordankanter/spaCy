@@ -10,7 +10,9 @@ from thinc.api import NumpyOps
 from ..attrs import IDS, ORTH, SPACY, intify_attr
 from ..compat import copy_reg
 from ..errors import Errors
-from ..util import ensure_path, SimpleFrozenList
+from ..util import SimpleFrozenList, ensure_path
+from ..vocab import Vocab
+from .doc import Doc
 from .span_groups import SpanGroups
 
 # fmt: off
