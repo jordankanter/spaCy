@@ -2,10 +2,6 @@ from cymem.cymem cimport Pool
 from libcpp.vector cimport vector
 from preshed.maps cimport PreshMap
 
-from .typedefs cimport hash_t
-from .structs cimport LexemeC, SpanC, TokenC
-from .tokens.doc cimport Doc
-from .vocab cimport Vocab, LexemesOrTokens, _Cached
 from .matcher.phrasematcher cimport PhraseMatcher
 from .structs cimport LexemeC, SpanC, TokenC
 from .tokens.doc cimport Doc

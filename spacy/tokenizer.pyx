@@ -9,17 +9,11 @@ from preshed.maps cimport PreshMap
 
 import re
 
-from .tokens.doc cimport Doc
-from .strings cimport hash_string
 from .lexeme cimport EMPTY_LEXEME
 from .strings cimport hash_string
 from .tokens.doc cimport Doc
 
-from .attrs import intify_attrs
-from .symbols import ORTH, NORM
-from .errors import Errors
 from . import util
-from .util import get_words_and_spaces
 from .attrs import intify_attrs
 from .errors import Errors
 from .scorer import Scorer
