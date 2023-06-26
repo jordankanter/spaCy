@@ -40,6 +40,7 @@ from .. import parts_of_speech
 from ..attrs import IOB_STRINGS
 from ..errors import Errors, Warnings
 from .underscore import Underscore, get_ext_args
+
 from cython.operator cimport dereference as deref
 
 from cython.operator cimport dereference as deref
