@@ -1,4 +1,5 @@
 from typing import cast
+
 import pytest
 from numpy.testing import assert_equal
 

@@ -1,49 +1,61 @@
 # cython: infer_types=True, cdivision=True, boundscheck=False, binding=True
 # cython: profile=False
 from __future__ import print_function
+
 from typing import Dict, Iterable, List, Optional, Tuple
-from cymem.cymem cimport Pool
+
 cimport numpy as np
 from cymem.cymem cimport Pool
 
 from itertools import islice
 
 from libc.stdlib cimport calloc, free
-from libc.string cimport memset
+from libc.string cimport memcpy, memset
 from libcpp.vector cimport vector
 
-import random
 import contextlib
+import random
+import warnings
 
-import srsly
-from thinc.api import get_ops, set_dropout_rate, CupyOps, NumpyOps, Optimizer
-from thinc.api import chain, softmax_activation, use_ops, get_array_module
-from thinc.legacy import LegacySequenceCategoricalCrossentropy
-from thinc.types import Floats2d, Ints1d
-import numpy.random
 import numpy
 import numpy.random
 import srsly
-from thinc.api import CupyOps, NumpyOps, set_dropout_rate
+from thinc.api import (
+    CupyOps,
+    NumpyOps,
+    Optimizer,
+    chain,
+    get_array_module,
+    get_ops,
+    set_dropout_rate,
+    softmax_activation,
+    use_ops,
+)
+from thinc.legacy import LegacySequenceCategoricalCrossentropy
+from thinc.types import Floats2d, Ints1d
 
 from ..ml.tb_framework import TransitionModelInputs
-from ._parser_internals.stateclass cimport StateC, StateClass
-from ._parser_internals.search cimport Beam
+
 from ..tokens.doc cimport Doc
-from .trainable_pipe cimport TrainablePipe
 from ._parser_internals cimport _beam_utils
+from ._parser_internals.search cimport Beam
+from ._parser_internals.stateclass cimport StateC, StateClass
+from .trainable_pipe cimport TrainablePipe
+
 from ._parser_internals import _beam_utils
+
+from ..typedefs cimport weight_t
 from ..vocab cimport Vocab
 from ._parser_internals.transition_system cimport Transition, TransitionSystem
-from ..typedefs cimport weight_t
 
-from ..training import validate_examples, validate_get_examples
-from ..training import validate_distillation_examples
-from ..errors import Errors, Warnings
 from .. import util
-from ..errors import Errors
-from ..training import validate_examples, validate_get_examples
-from ._parser_internals import _beam_utils
+from ..errors import Errors, Warnings
+from ..training import (
+    validate_distillation_examples,
+    validate_examples,
+    validate_get_examples,
+)
+
 
 from ..tokens.doc cimport Doc
 from ..vocab cimport Vocab

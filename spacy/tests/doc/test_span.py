@@ -6,7 +6,6 @@ from thinc.api import get_current_ops
 from spacy.attrs import LENGTH, ORTH
 from spacy.lang.en import English
 from spacy.tokens import Doc, Span, SpanGroup, Token
-from spacy.vocab import Vocab
 from spacy.util import filter_spans
 from spacy.vocab import Vocab
 

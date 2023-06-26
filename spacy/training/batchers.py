@@ -1,4 +1,17 @@
 import itertools
+from functools import partial
+from typing import (
+    Any,
+    Callable,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+)
+
 from thinc.schedules import Schedule
 
 from thinc.schedules import Schedule

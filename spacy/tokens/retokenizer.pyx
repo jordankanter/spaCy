@@ -16,6 +16,9 @@ from .token cimport Token
 
 from ..attrs import intify_attrs
 from ..errors import Errors
+from ..util import SimpleFrozenDict
+from .underscore import is_writable_attr
+
 from ..strings cimport get_string_id
 
 
