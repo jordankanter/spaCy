@@ -1,4 +1,5 @@
 from typing import cast
+
 import pytest
 from numpy.testing import assert_almost_equal, assert_equal
 from thinc.api import get_current_ops
@@ -9,7 +10,7 @@ from spacy.lang.en import English
 from spacy.language import Language
 from spacy.morphology import Morphology
 from spacy.pipeline import TrainablePipe
-from spacy.attrs import MORPH
+from spacy.tests.util import make_tempdir
 from spacy.tokens import Doc
 from spacy.training import Example
 
