@@ -1,4 +1,4 @@
-# cython: binding=True, infer_types=True
+# cython: binding=True, infer_types=True, profile=True
 from typing import Iterable, List
 
 from cymem.cymem cimport Pool
@@ -12,22 +12,34 @@ import warnings
 
 import srsly
 
-from ..attrs cimport DEP, ENT_IOB, ID, LEMMA, MORPH, NULL_ATTR, POS, TAG
+from ..attrs cimport (
+    DEP,
+    ENT_IOB,
+    ID,
+    LEMMA,
+    MORPH,
+    NULL_ATTR,
+    ORTH,
+    POS,
+    TAG,
+    attr_id_t,
+)
 from ..structs cimport TokenC
 from ..tokens.doc cimport Doc, get_token_attr_for_matcher
 from ..tokens.morphanalysis cimport MorphAnalysis
 from ..tokens.span cimport Span
 from ..tokens.token cimport Token
 from ..typedefs cimport attr_t
+from ..vocab cimport Vocab
 
-from ..schemas import validate_token_pattern
-from ..errors import Errors, MatchPatternError, Warnings
-from ..strings cimport get_string_id
-from ..attrs import IDS
 from ..errors import Errors, MatchPatternError, Warnings
 from ..schemas import validate_token_pattern
-from ..strings import get_string_id
 from .levenshtein import levenshtein_compare
+
+from ..strings cimport get_string_id
+
+from ..attrs import IDS
+from ..util import registry
 
 DEF PADDING = 5
 

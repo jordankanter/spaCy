@@ -1,4 +1,3 @@
-# cython: profile=False
 import re
 from itertools import chain
 from typing import List, Tuple

@@ -17,20 +17,12 @@ from typing import (
 
 import srsly
 
-from .pipe import Pipe
-from ..training import Example
-from ..language import Language
-from ..errors import Errors, Warnings
-from ..util import ensure_path, SimpleFrozenList, registry
-from ..tokens import Doc, Span
-from ..scorer import Scorer, get_ner_prf
-from ..matcher import Matcher, PhraseMatcher
 from .. import util
 from ..errors import Errors, Warnings
 from ..language import Language
 from ..matcher import Matcher, PhraseMatcher
 from ..matcher.levenshtein import levenshtein_compare
-from ..scorer import Scorer
+from ..scorer import Scorer, get_ner_prf
 from ..tokens import Doc, Span
 from ..training import Example
 from ..util import SimpleFrozenList, ensure_path, registry
