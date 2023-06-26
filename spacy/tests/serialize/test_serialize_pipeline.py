@@ -8,9 +8,14 @@ import spacy
 from spacy import Vocab, load, registry
 from spacy.lang.en import English
 from spacy.language import Language
-from spacy.pipeline import DependencyParser, EntityRecognizer
-from spacy.pipeline import SentenceRecognizer, Tagger, TextCategorizer
-from spacy.pipeline import TrainablePipe
+from spacy.pipeline import (
+    DependencyParser,
+    EntityRecognizer,
+    SentenceRecognizer,
+    Tagger,
+    TextCategorizer,
+    TrainablePipe,
+)
 from spacy.pipeline.dep_parser import DEFAULT_PARSER_MODEL
 from spacy.pipeline.senter import DEFAULT_SENTER_MODEL
 from spacy.pipeline.tagger import DEFAULT_TAGGER_MODEL

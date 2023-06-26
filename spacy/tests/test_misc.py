@@ -1,13 +1,19 @@
 import ctypes
 import os
 from pathlib import Path
-from spacy.about import __version__ as spacy_version
-from spacy import util
-from spacy import prefer_gpu, require_gpu, require_cpu
-from spacy.util import dot_to_object, SimpleFrozenList, import_file, to_ternary_int
-from spacy.util import find_available_port
-from thinc.api import Config, Optimizer, ConfigValidationError
-from thinc.api import get_current_ops, set_current_ops, NumpyOps, CupyOps, MPSOps
+
+import pytest
+from pydantic import ValidationError
+from thinc.api import (
+    Config,
+    ConfigValidationError,
+    CupyOps,
+    MPSOps,
+    NumpyOps,
+    Optimizer,
+    get_current_ops,
+    set_current_ops,
+)
 from thinc.compat import has_cupy_gpu, has_torch_mps_gpu
 
 from spacy import prefer_gpu, require_cpu, require_gpu, util
