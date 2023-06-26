@@ -2,13 +2,7 @@ import functools
 import importlib
 import importlib.metadata
 import importlib.util
-import re
-from pathlib import Path
-import thinc
-from thinc.api import NumpyOps, get_current_ops, Adam, Config, Optimizer
-from thinc.api import ConfigValidationError, Model, constant as constant_schedule
-from thinc.api import fix_random_seed, set_gpu_allocator
-import functools
+import inspect
 import itertools
 import logging
 import os
@@ -65,9 +59,6 @@ except ImportError:
     cupy = None
 
 
-from .symbols import ORTH
-from .compat import cupy, CudaStream, is_windows
-from .errors import Errors, Warnings
 from . import about
 from .compat import CudaStream, cupy, is_windows
 from .errors import Errors, Warnings
