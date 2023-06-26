@@ -8,10 +8,17 @@ from thinc.api import Adam, compounding
 import spacy
 from spacy.lang.en import English
 from spacy.tokens import Doc, DocBin
-from spacy.training import Alignment, Corpus, Example, biluo_tags_to_offsets
-from spacy.training import biluo_tags_to_spans, docs_to_json, iob_to_biluo
-from spacy.training import offsets_to_biluo_tags, validate_distillation_examples
-from spacy.training.alignment_array import AlignmentArray
+from spacy.training import (
+    Alignment,
+    Corpus,
+    Example,
+    biluo_tags_to_offsets,
+    biluo_tags_to_spans,
+    docs_to_json,
+    iob_to_biluo,
+    offsets_to_biluo_tags,
+    validate_distillation_examples,
+)
 from spacy.training.align import get_alignments
 from spacy.training.alignment_array import AlignmentArray
 from spacy.training.converters import json_to_docs

@@ -1,6 +1,6 @@
-# cython: infer_types=True, binding=True
+# cython: infer_types=True, profile=True, binding=True
 import warnings
-from typing import Callable, Dict, Iterable, Iterator, Tuple, Union
+from typing import Callable, Dict, Iterable, Iterator, Optional, Tuple, Union
 
 import srsly
 

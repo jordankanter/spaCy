@@ -1,10 +1,9 @@
 # cython: infer_types=True, cdivision=True, boundscheck=False, binding=True
-# cython: profile=False
 from typing import Generator, List, Tuple
 
 cimport cython
 from cython.operator cimport dereference
-from libc.stdint cimport int32_t
+from libc.stdint cimport int32_t, int64_t
 from libcpp.pair cimport pair
 from libcpp.unordered_map cimport unordered_map
 from libcpp.unordered_set cimport unordered_set
@@ -12,12 +11,13 @@ from libcpp.unordered_set cimport unordered_set
 import weakref
 
 from murmurhash.mrmr cimport hash64
+from preshed.maps cimport map_get_unless_missing
 
 from .. import Errors
 
-from ..typedefs cimport hash_t
 from ..strings cimport get_string_id
 from ..structs cimport EdgeC, GraphC
+from ..typedefs cimport hash_t
 
 from .token import Token
 

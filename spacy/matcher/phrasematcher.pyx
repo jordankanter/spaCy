@@ -1,15 +1,17 @@
 # cython: infer_types=True, profile=True
-from typing import List
 from collections import defaultdict
+from typing import List
+
 from libc.stdint cimport uintptr_t
-from preshed.maps cimport map_init, map_set, map_get, map_clear, map_iter
+from preshed.maps cimport map_clear, map_get, map_init, map_iter, map_set
 
 import warnings
 
-from ..attrs cimport DEP, LEMMA, MORPH, POS, TAG
+from ..attrs cimport DEP, LEMMA, MORPH, ORTH, POS, TAG
 
 from ..attrs import IDS
 
+from ..structs cimport TokenC
 from ..tokens.span cimport Span
 from ..tokens.token cimport Token
 from ..typedefs cimport attr_t

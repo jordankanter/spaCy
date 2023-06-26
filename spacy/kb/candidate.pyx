@@ -1,6 +1,7 @@
 # cython: infer_types=True
 
 from .kb_in_memory cimport InMemoryLookupKB
+
 from ..errors import Errors
 
 

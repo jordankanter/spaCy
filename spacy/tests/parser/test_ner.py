@@ -3,6 +3,7 @@ import random
 
 import pytest
 from numpy.testing import assert_equal
+from thinc.api import fix_random_seed
 
 from spacy import registry, util
 from spacy.attrs import ENT_IOB
@@ -16,8 +17,6 @@ from spacy.pipeline.ner import DEFAULT_NER_MODEL
 from spacy.tokens import Doc, Span
 from spacy.training import Example, iob_to_biluo, split_bilu_label
 from spacy.vocab import Vocab
-from thinc.api import fix_random_seed
-import logging
 
 from ..util import make_tempdir
 

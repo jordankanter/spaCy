@@ -7,7 +7,7 @@ import srsly
 from typer.testing import CliRunner
 
 from spacy.cli._util import app, get_git_version
-from spacy.tokens import Doc, DocBin, Span
+from spacy.tokens import Doc, DocBin
 
 from .util import make_tempdir, normalize_whitespace
 

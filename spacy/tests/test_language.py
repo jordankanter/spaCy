@@ -4,7 +4,7 @@ import warnings
 from unittest import mock
 
 import pytest
-from thinc.api import CupyOps, NumpyOps, get_current_ops
+from thinc.api import Config, CupyOps, NumpyOps, get_array_module, get_current_ops
 
 import spacy
 from spacy.lang.de import German
@@ -13,12 +13,14 @@ from spacy.language import Language
 from spacy.scorer import Scorer
 from spacy.tokens import Doc, Span
 from spacy.training import Example
-from spacy.lang.en import English
-from spacy.lang.de import German
-from spacy.util import registry, ignore_error, raise_error, find_matching_language
-from spacy.util import load_model_from_config
-import spacy
-from thinc.api import Config, CupyOps, NumpyOps, get_array_module, get_current_ops
+from spacy.util import (
+    find_matching_language,
+    ignore_error,
+    load_model_from_config,
+    raise_error,
+    registry,
+)
+from spacy.vocab import Vocab
 
 from .util import add_vecs_to_vocab, assert_docs_equal
 
