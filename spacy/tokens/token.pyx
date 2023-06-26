@@ -2,11 +2,13 @@
 # cython: profile=False
 # Compiler crashes on memory view coercion without this. Should report bug.
 cimport numpy as np
+from cython.view cimport array as cvarray
 
 np.import_array()
 
 import warnings
 
+import numpy
 from thinc.api import get_array_module
 
 from ..attrs cimport (
@@ -27,7 +29,6 @@ from ..attrs cimport (
     LIKE_EMAIL,
     LIKE_NUM,
     LIKE_URL,
-    ORTH,
 )
 from ..lexeme cimport Lexeme
 from ..symbols cimport conj
@@ -39,6 +40,7 @@ from .. import parts_of_speech
 from ..attrs import IOB_STRINGS
 from ..errors import Errors, Warnings
 from .underscore import Underscore, get_ext_args
+
 from cython.operator cimport dereference as deref
 
 

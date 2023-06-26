@@ -1,27 +1,21 @@
 from functools import partial
-from typing import List, Optional, Tuple, cast
+from typing import List, Optional, cast
 
 from thinc.api import (
     Dropout,
-    Gelu,
     LayerNorm,
     Linear,
     Logistic,
     Maxout,
     Model,
     ParametricAttention,
-    ParametricAttention_v2,
     Relu,
     Softmax,
     SparseLinear,
-    SparseLinear_v2,
     chain,
     clone,
     concatenate,
     list2ragged,
-    reduce_first,
-    reduce_last,
-    reduce_max,
     reduce_mean,
     reduce_sum,
     residual,
@@ -31,10 +25,9 @@ from thinc.api import (
 )
 from thinc.layers.chain import init as init_chain
 from thinc.layers.resizable import resize_linear_weighted, resize_model
-from thinc.types import ArrayXd, Floats2d
+from thinc.types import Floats2d
 
 from ...attrs import ORTH
-from ...errors import Errors
 from ...tokens import Doc
 from ...util import registry
 from ..extract_ngrams import extract_ngrams
