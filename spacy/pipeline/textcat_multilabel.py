@@ -1,7 +1,3 @@
-from typing import Iterable, Optional, Dict, List, Callable, Any, Union
-from thinc.types import Floats2d
-from thinc.api import Model, Config
-
 from itertools import islice
 from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 

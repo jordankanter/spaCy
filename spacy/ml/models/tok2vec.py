@@ -22,8 +22,6 @@ from thinc.types import Floats2d, Ints1d, Ints2d, Ragged
 from ...attrs import intify_attr
 from ...errors import Errors
 from ...ml import character_embed
-from ..staticvectors import StaticVectors
-from ..featureextractor import FeatureExtractor
 from ...pipeline.tok2vec import Tok2VecListener
 from ...tokens import Doc
 from ...util import registry

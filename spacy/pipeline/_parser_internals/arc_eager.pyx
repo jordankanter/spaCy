@@ -18,6 +18,7 @@ from ._state cimport ArcC, StateC
 from .stateclass cimport StateClass
 
 from ...errors import Errors
+
 from .search cimport Beam
 
 
