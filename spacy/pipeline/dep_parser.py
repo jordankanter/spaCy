@@ -4,13 +4,6 @@ from typing import Callable, Iterable, Optional
 
 from thinc.api import Config, Model
 
-from ._parser_internals.transition_system import TransitionSystem
-from .transition_parser import Parser
-from ._parser_internals.arc_eager import ArcEager
-
-from ._parser_internals.arc_eager cimport ArcEager
-from .transition_parser cimport Parser
-
 from ..language import Language
 from ..scorer import Scorer
 from ..training import remove_bilu_prefix
