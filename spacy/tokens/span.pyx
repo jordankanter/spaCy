@@ -15,8 +15,9 @@ from ..lexeme cimport Lexeme
 from ..parts_of_speech cimport univ_pos_t
 from ..structs cimport LexemeC, TokenC
 from ..symbols cimport dep
-from ..typedefs cimport attr_t, flags_t, hash_t
+from ..typedefs cimport attr_t
 from .doc cimport _get_lca_matrix, get_token_attr, token_by_end, token_by_start
+from .token cimport Token
 
 from ..errors import Errors, Warnings
 from ..util import normalize_slice

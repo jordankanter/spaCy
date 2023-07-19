@@ -642,3 +642,57 @@ def test_tok2vec_distillation_teacher_annotations():
 
     student_tok2vec.distill = tok2vec_distill_wrapper.__get__(student_tok2vec, Tok2Vec)
     student_nlp.distill(teacher_nlp, train_examples_student, sgd=optimizer, losses={})
+
+
+def test_tok2vec_listener_source_link_name():
+    """The component's internal name and the tok2vec listener map correspond
+    to the most recently modified pipeline.
+    """
+    orig_config = Config().from_str(cfg_string_multi)
+    nlp1 = util.load_model_from_config(orig_config, auto_fill=True, validate=True)
+    assert nlp1.get_pipe("tok2vec").listening_components == ["tagger", "ner"]
+
+    nlp2 = English()
+    nlp2.add_pipe("tok2vec", source=nlp1)
+    nlp2.add_pipe("tagger", name="tagger2", source=nlp1)
+
+    # there is no way to have the component have the right name for both
+    # pipelines, right now the most recently modified pipeline is prioritized
+    assert nlp1.get_pipe("tagger").name == nlp2.get_pipe("tagger2").name == "tagger2"
+
+    # there is no way to have the tok2vec have the right listener map for both
+    # pipelines, right now the most recently modified pipeline is prioritized
+    assert nlp2.get_pipe("tok2vec").listening_components == ["tagger2"]
+    nlp2.add_pipe("ner", name="ner3", source=nlp1)
+    assert nlp2.get_pipe("tok2vec").listening_components == ["tagger2", "ner3"]
+    nlp2.remove_pipe("ner3")
+    assert nlp2.get_pipe("tok2vec").listening_components == ["tagger2"]
+    nlp2.remove_pipe("tagger2")
+    assert nlp2.get_pipe("tok2vec").listening_components == []
+
+    # at this point the tok2vec component corresponds to nlp2
+    assert nlp1.get_pipe("tok2vec").listening_components == []
+
+    # modifying the nlp1 pipeline syncs the tok2vec listener map back to nlp1
+    nlp1.add_pipe("sentencizer")
+    assert nlp1.get_pipe("tok2vec").listening_components == ["tagger", "ner"]
+
+    # modifying nlp2 syncs it back to nlp2
+    nlp2.add_pipe("sentencizer")
+    assert nlp1.get_pipe("tok2vec").listening_components == []
+
+
+def test_tok2vec_listener_source_replace_listeners():
+    orig_config = Config().from_str(cfg_string_multi)
+    nlp1 = util.load_model_from_config(orig_config, auto_fill=True, validate=True)
+    assert nlp1.get_pipe("tok2vec").listening_components == ["tagger", "ner"]
+    nlp1.replace_listeners("tok2vec", "tagger", ["model.tok2vec"])
+    assert nlp1.get_pipe("tok2vec").listening_components == ["ner"]
+
+    nlp2 = English()
+    nlp2.add_pipe("tok2vec", source=nlp1)
+    assert nlp2.get_pipe("tok2vec").listening_components == []
+    nlp2.add_pipe("tagger", source=nlp1)
+    assert nlp2.get_pipe("tok2vec").listening_components == []
+    nlp2.add_pipe("ner", name="ner2", source=nlp1)
+    assert nlp2.get_pipe("tok2vec").listening_components == ["ner2"]
