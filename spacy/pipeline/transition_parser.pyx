@@ -7,15 +7,9 @@ from typing import Dict, Iterable, List, Optional, Tuple
 cimport numpy as np
 from cymem.cymem cimport Pool
 
-from itertools import islice
-
-from libc.stdlib cimport calloc, free
-from libc.string cimport memcpy, memset
-from libcpp.vector cimport vector
-
 import contextlib
 import random
-import warnings
+from itertools import islice
 
 import numpy
 import numpy.random
@@ -24,44 +18,20 @@ from thinc.api import (
     CupyOps,
     NumpyOps,
     Optimizer,
-    chain,
     get_array_module,
     get_ops,
     set_dropout_rate,
-    softmax_activation,
-    use_ops,
 )
-from thinc.legacy import LegacySequenceCategoricalCrossentropy
 from thinc.types import Floats2d, Ints1d
 
 from ..ml.tb_framework import TransitionModelInputs
 
 from ..tokens.doc cimport Doc
-from ._parser_internals cimport _beam_utils
-from ._parser_internals.search cimport Beam
-from ._parser_internals.stateclass cimport StateC, StateClass
-from .trainable_pipe cimport TrainablePipe
-
-from ._parser_internals import _beam_utils
-
 from ..typedefs cimport weight_t
 from ..vocab cimport Vocab
+from ._parser_internals cimport _beam_utils
+from ._parser_internals.stateclass cimport StateC, StateClass
 from ._parser_internals.transition_system cimport Transition, TransitionSystem
-
-from .. import util
-from ..errors import Errors, Warnings
-from ..training import (
-    validate_distillation_examples,
-    validate_examples,
-    validate_get_examples,
-)
-
-
-from ..tokens.doc cimport Doc
-from ..vocab cimport Vocab
-from ._parser_internals cimport _beam_utils
-from ._parser_internals.stateclass cimport StateC, StateClass
-from ._parser_internals.transition_system cimport Transition
 from .trainable_pipe cimport TrainablePipe
 
 from .. import util
@@ -89,6 +59,22 @@ from ..training import (
 )
 
 
+from ..tokens.doc cimport Doc
+from ..vocab cimport Vocab
+from ._parser_internals cimport _beam_utils
+from ._parser_internals.stateclass cimport StateC, StateClass
+from ._parser_internals.transition_system cimport Transition
+from .trainable_pipe cimport TrainablePipe
+
+from .. import util
+from ..errors import Errors, Warnings
+from ..training import (
+    validate_distillation_examples,
+    validate_examples,
+    validate_get_examples,
+)
+
+
 # TODO: Remove when we switch to Cython 3.
 cdef extern from "<algorithm>" namespace "std" nogil:
     bint equal[InputIt1, InputIt2](InputIt1 first1, InputIt1 last1, InputIt2 first2) except +
@@ -105,6 +91,11 @@ cdef extern from "<algorithm>" namespace "std" nogil:
 cdef extern from "<algorithm>" namespace "std" nogil:
     bint equal[InputIt1, InputIt2](InputIt1 first1, InputIt1 last1, InputIt2 first2) except +
 
+
+
+# TODO: Remove when we switch to Cython 3.
+cdef extern from "<algorithm>" namespace "std" nogil:
+    bint equal[InputIt1, InputIt2](InputIt1 first1, InputIt1 last1, InputIt2 first2) except +
 
 NUMPY_OPS = NumpyOps()
 
