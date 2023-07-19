@@ -948,7 +948,6 @@ cdef class Span:
         def __set__(self, str ent_id_):
             self.id_ = ent_id_
 
-
 cdef int _count_words_to_root(const TokenC* token, int sent_length) except -1:
     # Don't allow spaces to be the root, if there are
     # better candidates
