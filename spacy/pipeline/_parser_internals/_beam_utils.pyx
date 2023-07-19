@@ -4,9 +4,7 @@ cimport numpy as np
 
 import numpy
 
-from cpython.ref cimport Py_XDECREF, PyObject
-
-from ...typedefs cimport class_t, hash_t
+from ...typedefs cimport class_t
 from .transition_system cimport Transition, TransitionSystem
 
 from ...errors import Errors
