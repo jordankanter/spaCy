@@ -19,7 +19,6 @@ from ..scorer import Scorer
 from ..symbols import POS
 from ..training import validate_examples, validate_get_examples
 from ..util import registry
-from .pipe import deserialize_config
 from .tagger import ActivationsT, Tagger
 
 # See #9050
