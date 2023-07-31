@@ -1,6 +1,8 @@
 import warnings
 from typing import Literal
 
+from . import about
+
 
 class ErrorsWithCodes(type):
     def __getattribute__(self, code):
@@ -993,6 +995,18 @@ class Errors(metaclass=ErrorsWithCodes):
              "{existing_value}.")
     E4008 = ("Span {pos}_char {value} does not correspond to a token {pos}.")
     E4009 = ("The '{attr}' parameter should be 'None' or 'True', but found '{value}'.")
+    E4010 = ("Required lemmatizer table(s) {missing_tables} not found in "
+             "[initialize] or in registered lookups (spacy-lookups-data). An "
+             "example for how to load lemmatizer tables in [initialize]:\n\n"
+             "[initialize.components]\n\n"
+             "[initialize.components.{pipe_name}]\n\n"
+             "[initialize.components.{pipe_name}.lookups]\n"
+             '@misc = "spacy.LookupsDataLoaderFromURL.v1"\n'
+             "lang = ${{nlp.lang}}\n"
+             f'url = "{about.__lookups_url__}"\n'
+             "tables = {tables}\n"
+             "# or required tables only: tables = {required_tables}\n")
+    E4011 = ("Server error ({status_code}), couldn't fetch {url}")
 
 
 RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
