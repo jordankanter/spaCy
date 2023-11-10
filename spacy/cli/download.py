@@ -7,10 +7,11 @@ import typer
 from wasabi import msg
 
 from .. import about
+from ..errors import OLD_MODEL_SHORTCUTS
 from ..util import (
-    get_installed_models,
     get_minor_version,
-    get_package_version,
+    is_in_interactive,
+    is_in_jupyter,
     is_package,
     is_prerelease_version,
     run_command,
