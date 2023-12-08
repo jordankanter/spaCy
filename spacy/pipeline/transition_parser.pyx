@@ -65,10 +65,6 @@ cdef extern from "<algorithm>" namespace "std" nogil:
 
 
 
-# TODO: Remove when we switch to Cython 3.
-cdef extern from "<algorithm>" namespace "std" nogil:
-    bint equal[InputIt1, InputIt2](InputIt1 first1, InputIt1 last1, InputIt2 first2) except +
-
 NUMPY_OPS = NumpyOps()
 
 
@@ -703,6 +699,7 @@ class Parser(TrainablePipe):
                 to_cut = [state for state in to_cut if not state.is_final()]
                 length += 1
         return states
+
 
     def _init_gold_batch(self, examples, max_length):
         """Make a square batch, of length equal to the shortest transition
