@@ -217,12 +217,6 @@ class Warnings(metaclass=ErrorsWithCodes):
     W126 = ("These keys are unsupported: {unsupported}")
     W127 = ("Not all `Language.pipe` worker processes completed successfully")
 
-    # v4 warning strings
-    W400 = ("`use_upper=False` is ignored, the upper layer is always enabled")
-    W401 = ("`incl_prior is True`, but the selected knowledge base type {kb_type} doesn't support prior probability "
-            "lookups so this setting will be ignored. If your KB does support prior probability lookups, make sure "
-            "to return `True` in `.supports_prior_probs`.")
-
 
 class Errors(metaclass=ErrorsWithCodes):
     E001 = ("No component '{name}' found in pipeline. Available names: {opts}")
@@ -1005,6 +999,7 @@ class Errors(metaclass=ErrorsWithCodes):
              "tables = {tables}\n"
              "# or required tables only: tables = {required_tables}\n")
     E4011 = ("Server error ({status_code}), couldn't fetch {url}")
+
 
 
 RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
