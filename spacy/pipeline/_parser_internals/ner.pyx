@@ -159,7 +159,7 @@ cdef class BiluoPushDown(TransitionSystem):
             if token.ent_type:
                 labels.add(token.ent_type_)
         return labels
-    
+
     def move_name(self, int move, attr_t label):
         if move == OUT:
             return 'O'
@@ -644,7 +644,7 @@ cdef class Unit:
                 cost += 1
                 break
         return cost
- 
+
 
 
 cdef class Out:
