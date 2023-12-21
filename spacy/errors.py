@@ -1008,7 +1008,6 @@ class Errors(metaclass=ErrorsWithCodes):
     E4011 = ("Server error ({status_code}), couldn't fetch {url}")
 
 
-
 RENAMED_LANGUAGE_CODES = {"xx": "mul", "is": "isl"}
 
 # fmt: on
