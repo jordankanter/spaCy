@@ -976,6 +976,9 @@ class Errors(metaclass=ErrorsWithCodes):
     E1055 = ("The 'replace_listener' callback expects {num_params} parameters, "
              "but only callbacks with one or three parameters are supported")
     E1056 = ("The `TextCatBOW` architecture expects a length of at least 1, was {length}.")
+    E1057 = ("The `TextCatReduce` architecture must be used with at least one "
+             "reduction. Please enable one of `use_reduce_first`, "
+             "`use_reduce_last`, `use_reduce_max` or `use_reduce_mean`.")
 
     # v4 error strings
     E4000 = ("Expected a Doc as input, but got: '{type}'")
