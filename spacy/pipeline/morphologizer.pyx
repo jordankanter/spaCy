@@ -2,9 +2,7 @@
 from itertools import islice
 from typing import Callable, Dict, Iterable, Optional, Union
 
-from thinc.api import Config, Model
-from thinc.legacy import LegacySequenceCategoricalCrossentropy
-from thinc.types import Floats2d, Ints1d
+from thinc.api import Config, Model, SequenceCategoricalCrossentropy
 
 from ..morphology cimport Morphology
 from ..tokens.doc cimport Doc
@@ -296,7 +294,8 @@ class Morphologizer(Tagger):
         DOCS: https://spacy.io/api/morphologizer#get_loss
         """
         validate_examples(examples, "Morphologizer.get_loss")
-        loss_func = LegacySequenceCategoricalCrossentropy(names=tuple(self.labels), normalize=False)
+        loss_func = SequenceCategoricalCrossentropy(names=self.labels, normalize=False,
+                                                    label_smoothing=self.cfg["label_smoothing"])
         truths = []
         for eg in examples:
             eg_truths = []
