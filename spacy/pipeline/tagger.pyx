@@ -4,9 +4,7 @@ from itertools import islice
 from typing import Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy
-import srsly
-from thinc.api import Config, Model, set_dropout_rate
-from thinc.legacy import LegacySequenceCategoricalCrossentropy
+from thinc.api import Config, Model, SequenceCategoricalCrossentropy, set_dropout_rate
 from thinc.types import Floats2d, Ints1d
 
 from ..morphology cimport Morphology
@@ -275,7 +273,7 @@ class Tagger(TrainablePipe):
         
         DOCS: https://spacy.io/api/tagger#get_teacher_student_loss
         """
-        loss_func = LegacySequenceCategoricalCrossentropy(normalize=False)
+        loss_func = SequenceCategoricalCrossentropy(normalize=False)
         d_scores, loss = loss_func(student_scores, teacher_scores)
         if self.model.ops.xp.isnan(loss):
             raise ValueError(Errors.E910.format(name=self.name))
@@ -292,7 +290,12 @@ class Tagger(TrainablePipe):
         DOCS: https://spacy.io/api/tagger#get_loss
         """
         validate_examples(examples, "Tagger.get_loss")
-        loss_func = LegacySequenceCategoricalCrossentropy(names=self.labels, normalize=False, neg_prefix=self.cfg["neg_prefix"])
+        loss_func = SequenceCategoricalCrossentropy(
+            names=self.labels,
+            normalize=False,
+            neg_prefix=self.cfg["neg_prefix"],
+            label_smoothing=self.cfg["label_smoothing"]
+        )
         # Convert empty tag "" to missing value None so that both misaligned
         # tokens and tokens with missing annotation have the default missing
         # value None.
