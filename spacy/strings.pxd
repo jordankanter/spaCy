@@ -17,10 +17,7 @@ cdef class StringStore:
     cdef vector[hash_t] _keys
     cdef PreshMap _map
 
-    cdef hash_t _intern_str(self, str string)
-    cdef Utf8Str* _allocate_str_repr(self, const unsigned char* chars, uint32_t length) except *
-    cdef str _decode_str_repr(self, const Utf8Str* string)
-
-
-cpdef hash_t hash_string(object string) except -1
-cpdef hash_t get_string_id(object string_or_hash) except -1
+    cdef const Utf8Str* intern_unicode(self, str py_string, bint allow_transient)
+    cdef const Utf8Str* _intern_utf8(self, char* utf8_string, int length, hash_t* precalculated_hash, bint allow_transient)
+    cdef vector[hash_t] _transient_keys
+    cdef Pool _non_temp_mem

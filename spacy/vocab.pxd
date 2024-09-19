@@ -39,7 +39,10 @@ cdef class Vocab:
     cdef const LexemeC* get_by_orth(self, attr_t orth) except NULL
     cdef const TokenC* make_fused_token(self, substrings) except NULL
 
-    cdef const LexemeC* _new_lexeme(self, str string) except NULL
-    cdef int _add_lex_to_vocab(self, hash_t key, const LexemeC* lex) except -1
+    cdef const LexemeC* _new_lexeme(self, Pool mem, str string) except NULL
+    cdef int _add_lex_to_vocab(self, hash_t key, const LexemeC* lex, bint is_transient) except -1
+    cdef const LexemeC* _new_lexeme(self, Pool mem, str string) except NULL
 
     cdef PreshMap _by_orth
+    cdef Pool _non_temp_mem
+    cdef vector[attr_t] _transient_orths
