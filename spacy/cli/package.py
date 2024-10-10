@@ -30,6 +30,7 @@ def package_cli(
     version: Optional[str] = Opt(None, "--version", "-v", help="Package version to override meta"),
     build: str = Opt("sdist", "--build", "-b", help="Comma-separated formats to build: sdist and/or wheel, or none."),
     force: bool = Opt(False, "--force", "-f", "-F", help="Force overwriting existing data in output directory"),
+    require_parent: bool = Opt(True, "--require-parent/--no-require-parent", "-R", "-R", help="Include the parent package (e.g. spacy) in the requirements"),
     # fmt: on
 ):
     """
@@ -60,6 +61,7 @@ def package_cli(
         create_sdist=create_sdist,
         create_wheel=create_wheel,
         force=force,
+        require_parent=require_parent,
         silent=False,
     )
 
@@ -74,6 +76,7 @@ def package(
     create_meta: bool = False,
     create_sdist: bool = True,
     create_wheel: bool = False,
+    require_parent: bool = False,
     force: bool = False,
     silent: bool = True,
 ) -> None:
@@ -113,7 +116,7 @@ def package(
     if not meta_path.exists() or not meta_path.is_file():
         msg.fail("Can't load pipeline meta.json", meta_path, exits=1)
     meta = srsly.read_json(meta_path)
-    meta = get_meta(input_dir, meta)
+    meta = get_meta(input_dir, meta, require_parent=require_parent)
     if meta["requirements"]:
         msg.good(
             f"Including {len(meta['requirements'])} package requirement(s) from "
@@ -186,6 +189,7 @@ def package(
         imports.append(code_path.stem)
         shutil.copy(str(code_path), str(package_path))
     create_file(main_path / "meta.json", srsly.json_dumps(meta, indent=2))
+
     create_file(main_path / "setup.py", TEMPLATE_SETUP)
     create_file(main_path / "MANIFEST.in", TEMPLATE_MANIFEST)
     init_py = TEMPLATE_INIT.format(
@@ -302,6 +306,8 @@ def get_third_party_dependencies(
                 modules.add(func_info["module"].split(".")[0])  # type: ignore[union-attr]
     dependencies = []
     for module_name in modules:
+        if module_name == about.__title__:
+            continue
         if module_name in distributions:
             dist = distributions.get(module_name)
             if dist:
@@ -332,7 +338,9 @@ def create_file(file_path: Path, contents: str) -> None:
 
 
 def get_meta(
-    model_path: Union[str, Path], existing_meta: Dict[str, Any]
+    model_path: Union[str, Path],
+    existing_meta: Dict[str, Any],
+    require_parent: bool = False,
 ) -> Dict[str, Any]:
     meta: Dict[str, Any] = {
         "lang": "en",
@@ -361,6 +369,8 @@ def get_meta(
     existing_reqs = [util.split_requirement(req)[0] for req in meta["requirements"]]
     reqs = get_third_party_dependencies(nlp.config, exclude=existing_reqs)
     meta["requirements"].extend(reqs)
+    if require_parent and about.__title__ not in meta["requirements"]:
+        meta["requirements"].append(about.__title__ + meta["spacy_version"])
     return meta
 
 
@@ -535,8 +545,11 @@ def list_files(data_dir):
 
 
 def list_requirements(meta):
-    parent_package = meta.get('parent_package', 'spacy')
-    requirements = [parent_package + meta['spacy_version']]
+    # Up to version 3.7, we included the parent package
+    # in requirements by default. This behaviour is removed
+    # in 3.8, with a setting to include the parent package in
+    # the requirements list in the meta if desired.
+    requirements = []
     if 'setup_requires' in meta:
         requirements += meta['setup_requires']
     if 'requirements' in meta:

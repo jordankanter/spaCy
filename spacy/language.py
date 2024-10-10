@@ -30,9 +30,11 @@ from typing import (
     overload,
 )
 
+import numpy
 import srsly
 from cymem.cymem import Pool
 from thinc.api import Config, CupyOps, Optimizer, get_current_ops
+from thinc.util import convert_recursive
 
 from . import about, ty, util
 from .errors import Errors, Warnings
@@ -1311,19 +1313,7 @@ class Language:
                     examples,
                 ):
                     eg.predicted = doc
-        # Only finish the update after all component updates are done. Some
-        # components may share weights (such as tok2vec) and we only want
-        # to apply weight updates after all gradients are accumulated.
-        for name, proc in self.pipeline:
-            if (
-                name not in exclude
-                and isinstance(proc, ty.TrainableComponent)
-                and proc.is_trainable
-                and sgd not in (None, False)
-            ):
-                proc.finish_update(sgd)
-
-        return losses
+        return _replace_numpy_floats(losses)
 
     def rehearse(
         self,
@@ -1571,7 +1561,7 @@ class Language:
         results = scorer.score(examples, per_component=per_component)
         n_words = sum(len(eg.predicted) for eg in examples)
         results["speed"] = n_words / (end_time - start_time)
-        return results
+        return _replace_numpy_floats(results)
 
     def create_optimizer(self):
         """Create an optimizer, usually using the [training.optimizer] config."""
@@ -2253,7 +2243,9 @@ class Language:
         serializers["tokenizer"] = lambda p: self.tokenizer.to_disk(  # type: ignore[union-attr]
             p, exclude=["vocab"]
         )
-        serializers["meta.json"] = lambda p: srsly.write_json(p, self.meta)
+        serializers["meta.json"] = lambda p: srsly.write_json(
+            p, _replace_numpy_floats(self.meta)
+        )
         serializers["config.cfg"] = lambda p: self.config.to_disk(p)
         for name, proc in self._components:
             if name in exclude:
@@ -2364,7 +2356,9 @@ class Language:
         serializers: Dict[str, Callable[[], bytes]] = {}
         serializers["vocab"] = lambda: self.vocab.to_bytes(exclude=exclude)
         serializers["tokenizer"] = lambda: self.tokenizer.to_bytes(exclude=["vocab"])  # type: ignore[union-attr]
-        serializers["meta.json"] = lambda: srsly.json_dumps(self.meta)
+        serializers["meta.json"] = lambda: srsly.json_dumps(
+            _replace_numpy_floats(self.meta)
+        )
         serializers["config.cfg"] = lambda: self.config.to_bytes()
         for name, proc in self._components:
             if name in exclude:
@@ -2410,6 +2404,12 @@ class Language:
         util.from_bytes(bytes_data, deserializers, exclude)
         self._link_components()
         return self
+
+
+def _replace_numpy_floats(meta_dict: dict) -> dict:
+    return convert_recursive(
+        lambda v: isinstance(v, numpy.floating), lambda v: float(v), dict(meta_dict)
+    )
 
 
 @dataclass
